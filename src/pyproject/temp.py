@@ -18,6 +18,7 @@ class ProjectBuilder:
         self, project_name: str, template_path: PathLike = TEMPLATE_PATH
     ) -> None:
         self._validate_project_name(project_name)
+        self._project_name = project_name
         self._project_path = Path(project_name)
         self._template_path = Path(template_path)
 
@@ -30,10 +31,17 @@ class ProjectBuilder:
                 " and/or _, and they must begin and end with a letter or number."
             )
 
-    def fill_in_templates(self):
+    def fill_in_templates(self) -> dict[str, str]:
+        d = {"PACKAGE": self._project_name}
+        filled_in_templates = {}
         for file in self._template_path.glob("*.template"):
             with open(file) as f:
                 src = string.Template(f.read())
+                result = src.substitute(d)
+
+                filled_in_templates[f.name] = result
+
+        return filled_in_templates
 
     def init_project(self):
         # Create the project directory
