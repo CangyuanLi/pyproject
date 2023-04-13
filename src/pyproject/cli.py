@@ -2,7 +2,7 @@ import argparse
 import typing
 
 from .project_builder import Action, ProjectBuilder
-from ._version import __version__
+from .__version__ import __version__
 
 ACTIONS = list(typing.get_args(Action))
 
