@@ -2,6 +2,7 @@ import argparse
 import typing
 
 from .project_builder import Action, ProjectBuilder
+from ._version import __version__
 
 ACTIONS = list(typing.get_args(Action))
 
@@ -12,13 +13,13 @@ def get_parser():
     parser.add_argument("action", type=str, choices=ACTIONS, help="Action")
     parser.add_argument("project_name", type=str, help="Name of the project")
 
-    # parser.add_argument(
-    #     "-v",
-    #     "--version",
-    #     action="version",
-    #     version="%(prog)s {version}".format(version=__version__),
-    #     help="Displays package version",
-    # )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version="%(prog)s {version}".format(version=__version__),
+        help="Displays package version",
+    )
 
     return parser
 
