@@ -1,0 +1,29 @@
+# $PACKAGE: 
+![PyPI - Downloads](https://img.shields.io/pypi/dm/$PACKAGE)
+![Tests](https://github.com/CangyuanLi/$PACKAGE/actions/workflows/tests.yml/badge.svg)
+
+## What is it?
+
+**$PACKAGE** is
+
+# Usage:
+
+## Dependencies
+
+## Installing
+
+The easiest way is to install **$PACKAGE** is from PyPI using pip:
+
+```sh
+pip install $PACKAGE
+```
+
+## Running
+
+First, import the library.
+
+```python
+import $PACKAGE
+```
+
+# TODO:

@@ -2,15 +2,44 @@
 
 from pathlib import Path
 import re
-import shutil
+import subprocess
 import string
-from typing import Literal, Union
-
+from types import SimpleNamespace
+from typing import Literal, Optional, Union
+import venv
 
 Action = Literal["init", "convert"]
 PathLike = Union[Path, str]
 
 TEMPLATE_PATH = Path(__file__).resolve().parents[0] / "templates"
+
+
+class _EnvBuilder(venv.EnvBuilder):
+    def __init__(self, *args, **kwargs) -> None:
+        self.context: Optional[SimpleNamespace] = None
+        super().__init__(*args, **kwargs)
+
+    def post_setup(self, context: SimpleNamespace):
+        self.context = context
+
+
+def _venv_create(venv_path):
+    venv_builder = _EnvBuilder(with_pip=True)
+    venv_builder.create(venv_path)
+
+    return venv_builder.context
+
+
+def _run_python_in_venv(venv_context: SimpleNamespace, command: list[str]):
+    command = [venv_context.env_exe] + command
+
+    return subprocess.run(command, check=True)
+
+
+def _run_bin_in_venv(venv_context: SimpleNamespace, command: list[str]):
+    command[0] = Path(venv_context.bin_path).joinpath(command[0]).as_posix()
+
+    return subprocess.run(command, check=True, capture_output=True)
 
 
 class ProjectBuilder:
@@ -35,11 +64,11 @@ class ProjectBuilder:
         d = {"PACKAGE": self._project_name}
         filled_in_templates = {}
         for file in self._template_path.glob("*.template"):
-            with open(file) as f:
+            with open(file, "r") as f:
                 src = string.Template(f.read())
                 result = src.substitute(d)
 
-                filled_in_templates[f.name] = result
+                filled_in_templates[file.stem] = result
 
         return filled_in_templates
 
@@ -47,10 +76,58 @@ class ProjectBuilder:
         # Create the project directory
         self._project_path.mkdir()
 
-        shutil.copy(
-            self._template_path / "setup.template", self._project_path / "setup.cfg"
-        )
-        shutil.copy(self._temp)
+        # src
+        src_path = self._project_path / "src"
+        src_path.mkdir()
+
+        src_proj_path = src_path / self._project_name
+        src_proj_path.mkdir()
+        (src_proj_path / "__init__.py").touch()
+        (src_proj_path / "py.typed").touch()
+
+        # Fill in templates
+        templates = self.fill_in_templates()
+
+        # tests
+        tests_path = self._project_path / "tests"
+        tests_path.mkdir()
+        (tests_path / f"test_{self._project_name}.py").touch()
+
+        # benchmarks
+        benchmarks_path = self._project_path / "benchmarks"
+        benchmarks_path.mkdir()
+        (benchmarks_path / "benchmark.py").touch()
+
+        # github actions
+        workflows_path = self._project_path / ".github/workflows"
+        workflows_path.mkdir(parents=True)
+        (workflows_path / "tests.yml").write_text(templates["tests"])
+
+        # misc setup
+        (self._project_path / "tox.ini").write_text(templates["tox"])
+        (self._project_path / "pyproject.toml").write_text(templates["pyproject"])
+        (self._project_path / "setup.cfg").write_text(templates["setup"])
+        (self._project_path / ".gitignore").write_text(templates["gitignore"])
+        (self._project_path / "README.md").write_text(templates["readme"])
+
+        # Setup the virtual environment
+
+        venv_path = self._project_path / "venv"
+        venv_context = _venv_create(venv_path)
+        _run_python_in_venv(venv_context, ["-m", "pip", "install", "-U", "pip"])
+        _run_bin_in_venv(venv_context, ["pip", "install", "build"])
+        _run_bin_in_venv(venv_context, ["pip", "install", "black"])
+
+        # venv_path.mkdir()
+        # venv.create(venv_path, with_pip=True)
+
+        # Install developer dependencies
+        for dep in ("black", "mypy", "build"):
+            _run_bin_in_venv(venv_context, ["pip", "install", dep])
+
+        # Create requirements_dev file
+        reqs = _run_bin_in_venv(venv_context, ["pip", "freeze"])
+        (self._project_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
     def create_project(self, action: Action):
         if action == "init":
