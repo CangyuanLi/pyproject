@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from typing import Literal, Optional, Union
 import venv
 
-Action = Literal["init", "convert"]
+Action = Literal["init", "upload"]
 PathLike = Union[Path, str]
 
 TEMPLATE_PATH = Path(__file__).resolve().parents[0] / "templates"
@@ -129,10 +129,8 @@ class ProjectBuilder:
         reqs = _run_bin_in_venv(venv_context, ["pip", "freeze"])
         (self._project_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
-    def create_project(self, action: Action):
+    def dispatch(self, action: Action):
         if action == "init":
-            pass
-        elif action == "convert":
-            raise NotImplementedError(
-                "Converting an existing project is not supported yet."
-            )
+            self.init_project()
+        elif action == "upload":
+            raise NotImplementedError("Uploading a project is not supported yet.")

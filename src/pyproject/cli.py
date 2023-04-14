@@ -27,8 +27,8 @@ def get_parser():
 def main():
     args = get_parser().parse_args()
 
-    a = ProjectBuilder(project_name=args.project_name)
-    a.init_project()
+    builder = ProjectBuilder(project_name=args.project_name)
+    builder.dispatch(action=args.action)
 
 
 if __name__ == "__main__":
