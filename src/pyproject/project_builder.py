@@ -8,19 +8,41 @@ from types import SimpleNamespace
 from typing import Literal, Optional, Union
 import venv
 
-Action = Literal["init", "upload"]
+Action = Literal["init", "upload", "config"]
 PathLike = Union[Path, str]
 
 TEMPLATE_PATH = Path(__file__).resolve().parents[0] / "templates"
 
 
 class _EnvBuilder(venv.EnvBuilder):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, venv_path: PathLike, *args, **kwargs) -> None:
         self.context: Optional[SimpleNamespace] = None
+        self.venv_path = Path(venv_path)
         super().__init__(*args, **kwargs)
 
     def post_setup(self, context: SimpleNamespace):
         self.context = context
+
+    def venv_create(self) -> Optional[SimpleNamespace]:
+        self.create(self.venv_path)
+
+        return self.context
+
+    def run_python_in_venv(
+        self, command: list[str]
+    ) -> subprocess.CompletedProcess[bytes]:
+        assert self.context is not None
+        command = [self.context.env_exe] + command
+
+        return subprocess.run(command, check=True)
+
+    def run_bin_in_venv(
+        self, command: list[str], **kwargs
+    ) -> subprocess.CompletedProcess[bytes]:
+        assert self.context is not None
+        command[0] = Path(self.context.bin_path).joinpath(command[0]).as_posix()
+
+        return subprocess.run(command, check=True, **kwargs)
 
 
 def _venv_create(venv_path):
@@ -112,21 +134,16 @@ class ProjectBuilder:
 
         # Setup the virtual environment
 
-        venv_path = self._project_path / "venv"
-        venv_context = _venv_create(venv_path)
-        _run_python_in_venv(venv_context, ["-m", "pip", "install", "-U", "pip"])
-        _run_bin_in_venv(venv_context, ["pip", "install", "build"])
-        _run_bin_in_venv(venv_context, ["pip", "install", "black"])
-
-        # venv_path.mkdir()
-        # venv.create(venv_path, with_pip=True)
+        venv_builder = _EnvBuilder(self._project_path / "venv", with_pip=True)
+        venv_builder.venv_create()
+        venv_builder.run_python_in_venv(["-m", "pip", "install", "-U", "pip"])
 
         # Install developer dependencies
         for dep in ("black", "mypy", "build", "tox", "pytest"):
-            _run_bin_in_venv(venv_context, ["pip", "install", dep])
+            venv_builder.run_bin_in_venv(["pip", "install", dep])
 
         # Create requirements_dev file
-        reqs = _run_bin_in_venv(venv_context, ["pip", "freeze"])
+        reqs = venv_builder.run_bin_in_venv(["pip", "freeze"], capture_output=True)
         (self._project_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
     def dispatch(self, action: Action):
@@ -134,3 +151,7 @@ class ProjectBuilder:
             self.init_project()
         elif action == "upload":
             raise NotImplementedError("Uploading a project is not supported yet.")
+        elif action == "config":
+            raise NotImplementedError(
+                "Setting environment variables is not supported yet."
+            )
