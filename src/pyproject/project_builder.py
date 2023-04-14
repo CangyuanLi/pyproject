@@ -45,25 +45,6 @@ class _EnvBuilder(venv.EnvBuilder):
         return subprocess.run(command, check=True, **kwargs)
 
 
-def _venv_create(venv_path):
-    venv_builder = _EnvBuilder(with_pip=True)
-    venv_builder.create(venv_path)
-
-    return venv_builder.context
-
-
-def _run_python_in_venv(venv_context: SimpleNamespace, command: list[str]):
-    command = [venv_context.env_exe] + command
-
-    return subprocess.run(command, check=True)
-
-
-def _run_bin_in_venv(venv_context: SimpleNamespace, command: list[str]):
-    command[0] = Path(venv_context.bin_path).joinpath(command[0]).as_posix()
-
-    return subprocess.run(command, check=True, capture_output=True)
-
-
 class ProjectBuilder:
     def __init__(
         self, project_name: str, template_path: PathLike = TEMPLATE_PATH
