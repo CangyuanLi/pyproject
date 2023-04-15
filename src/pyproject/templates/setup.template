@@ -1,14 +1,14 @@
 [metadata]
 name = $PACKAGE
 version = 0.0.0
-author = Cangyuan Li
-author_email = everest229@gmail.com
+author = $AUTHOR
+author_email = $EMAIL
 description = 
 long_description = file: README.md
 long_description_content_type = text/markdown
-url = https://github.com/CangyuanLi/$PACKAGE
+url = $GITHUB_URL/$PACKAGE
 project_urls =
-    Bug Tracker = https://github.com/CangyuanLi/$PACKAGE/issues
+    Bug Tracker = $GITHUB_URL/$PACKAGE/issues
 classifiers =
     Programming Language :: Python :: 3
     License :: OSI Approved :: MIT License

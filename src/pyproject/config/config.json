@@ -1,0 +1,14 @@
+{
+    "pypi_username": "",
+    "pypi_password": "",
+    "github_url": "",
+    "author": "",
+    "email": "",
+    "dependencies": [
+        "mypy",
+        "build",
+        "tox",
+        "pytest",
+        "black"
+    ]
+}

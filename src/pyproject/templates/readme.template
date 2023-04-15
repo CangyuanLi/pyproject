@@ -1,6 +1,6 @@
 # $PACKAGE: 
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/$PACKAGE)
-![Tests](https://github.com/CangyuanLi/$PACKAGE/actions/workflows/tests.yml/badge.svg)
+![Tests]($GITHUB_URL/$PACKAGE/actions/workflows/tests.yml/badge.svg)
 
 ## What is it?
 
