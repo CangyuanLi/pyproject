@@ -3,10 +3,11 @@
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import string
 from types import SimpleNamespace
-from typing import Any, Literal, Optional, Union
+from typing import Literal, Optional, Union
 import venv
 
 Action = Literal["init", "upload", "config"]
@@ -193,10 +194,25 @@ class ProjectBuilder:
         with open(self._config_path, "w") as f:
             json.dump(config, f, indent=4)
 
+    def upload(self):
+        username = self._config["pypi_username"]
+        password = self._config["pypi_password"]
+
+        shutil.rmtree(self._project_path / "dist", ignore_errors=True)
+        venv_builder = _EnvBuilder(self._project_path / "venv", with_pip=True)
+        venv_builder.run_python_in_venv(["-m", "build"])
+
+        if "" in (username, password):
+            venv_builder.run_bin_in_venv(["twine", "upload", "dist/*"])
+        else:
+            venv_builder.run_bin_in_venv(
+                ["twine", "upload", "dist/*", "-u", username, "-p", password]
+            )
+
     def dispatch(self, action: Action):
         if action == "init":
             self.init_project()
         elif action == "upload":
-            raise NotImplementedError("Uploading a project is not supported yet.")
+            self.upload()
         elif action == "config":
             self.config()
