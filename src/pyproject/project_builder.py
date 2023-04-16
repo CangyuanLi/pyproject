@@ -201,6 +201,7 @@ class ProjectBuilder:
         shutil.rmtree(self._project_path / "dist", ignore_errors=True)
         venv_builder = _EnvBuilder(self._project_path / "venv", with_pip=True)
         venv_builder.run_python_in_venv(["-m", "build"])
+        venv_builder.run_bin_in_venv(["twine", "check", "dist/*"])
 
         if "" in (username, password):
             venv_builder.run_bin_in_venv(["twine", "upload", "dist/*"])
