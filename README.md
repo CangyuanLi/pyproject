@@ -3,7 +3,7 @@
 
 ## What is it?
 
-**pyproject** is a command line utility to setup Python packages.
+**pyproject** is a command line utility to setup and distribute Python packages.
 
 # Usage:
 
