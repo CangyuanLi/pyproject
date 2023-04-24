@@ -15,6 +15,12 @@ def get_parser():
         "project_name", type=str, nargs="?", default=None, help="Name of the project"
     )
 
+    parser.add_argument(
+        "--reset_config",
+        required=False,
+        action="store_true",
+        help="Reset configuration to default settings",
+    )
     parser.add_argument("--pypi_username", type=str, help="Set PyPI username")
     parser.add_argument("--pypi_password", type=str, help="Set PyPI password")
     parser.add_argument("--github_url", type=str, help="Set Github URL")
@@ -68,6 +74,7 @@ def main():
         "set_dependencies": args.set_dependencies,
         "add_dependencies": args.add_dependencies,
         "remove_dependencies": args.remove_dependencies,
+        "reset_config": args.reset_config,
     }
 
     builder = ProjectBuilder(project_name=args.project_name, config=config)

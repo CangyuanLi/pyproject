@@ -15,7 +15,7 @@ PathLike = Union[Path, str]
 
 BASE_PATH = Path(__file__).resolve().parents[0]
 TEMPLATE_PATH = BASE_PATH / "templates"
-CONFIG_PATH = BASE_PATH / "config/config.json"
+CONFIG_PATH = BASE_PATH / "config"
 
 
 class _EnvBuilder(venv.EnvBuilder):
@@ -148,8 +148,8 @@ class ProjectBuilder:
         reqs = venv_builder.run_bin_in_venv(["pip", "freeze"], capture_output=True)
         (self._project_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
-    def _parse_config_file(self) -> dict:
-        with open(self._config_path) as f:
+    def _parse_config_file(self, filename: PathLike) -> dict:
+        with open(self._config_path / filename) as f:
             config: dict = json.load(f)
 
         return config
@@ -162,7 +162,12 @@ class ProjectBuilder:
         return set(word.strip() for word in string.split(sep))
 
     def _set_config(self, config: dict[str, str]) -> dict:
-        saved_config = self._parse_config_file()
+        if config["reset_config"]:
+            saved_path = "default_config.json"
+        else:
+            saved_path = "config.json"
+
+        saved_config = self._parse_config_file(saved_path)
 
         if config["set_dependencies"] is None:
             config["dependencies"] = set(saved_config["dependencies"])
