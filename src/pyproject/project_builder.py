@@ -1,5 +1,6 @@
 # Imports
 
+import os
 import json
 from pathlib import Path
 import re
@@ -60,7 +61,8 @@ class ProjectBuilder:
         if project_name is not None:
             self._validate_project_name(project_name)
             self._project_name = project_name
-            self._project_path = Path(project_name)
+
+        self._project_path = Path().cwd()
 
         self._template_path = Path(template_path)
         self._config_path = Path(config_path)
@@ -203,15 +205,29 @@ class ProjectBuilder:
         username = self._config["pypi_username"]
         password = self._config["pypi_password"]
 
+        try:
+            venv_path = Path(os.environ["VIRTUAL_ENV"]) / "bin"
+        except KeyError:
+            venv_path = ""
+
+        # TODO: Make EnvBuilder class capable of handling existing venvs, removing
+        # the need for this duplicate function
+        def run_bin_in_venv(
+            command: list[str], **kwargs
+        ) -> subprocess.CompletedProcess[bytes]:
+            command[0] = Path(venv_path).joinpath(command[0]).as_posix()
+
+            return subprocess.run(command, check=True, **kwargs)
+
         shutil.rmtree(self._project_path / "dist", ignore_errors=True)
-        venv_builder = _EnvBuilder(self._project_path / "venv", with_pip=True)
-        venv_builder.run_python_in_venv(["-m", "build"])
-        venv_builder.run_bin_in_venv(["twine", "check", "dist/*"])
+
+        run_bin_in_venv(["python", "-m", "build"])
+        run_bin_in_venv(["twine", "check", "dist/*"])
 
         if "" in (username, password):
-            venv_builder.run_bin_in_venv(["twine", "upload", "dist/*"])
+            run_bin_in_venv(["twine", "upload", "dist/*"])
         else:
-            venv_builder.run_bin_in_venv(
+            run_bin_in_venv(
                 ["twine", "upload", "dist/*", "-u", username, "-p", password]
             )
 
