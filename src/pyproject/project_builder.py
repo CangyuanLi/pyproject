@@ -19,33 +19,42 @@ TEMPLATE_PATH = BASE_PATH / "templates"
 CONFIG_PATH = BASE_PATH / "config"
 
 
-class _EnvBuilder(venv.EnvBuilder):
-    def __init__(self, venv_path: PathLike, *args, **kwargs) -> None:
-        self.context: Optional[SimpleNamespace] = None
-        self.venv_path = Path(venv_path)
+class Env(venv.EnvBuilder):
+    def __init__(self, *args, **kwargs) -> None:
+        self.context = self.get_context()
         super().__init__(*args, **kwargs)
+
+    def get_context(self) -> Optional[SimpleNamespace]:
+        if "VIRTUAL_ENV" not in os.environ:
+            self.context = None
+            return None
+
+        env_dir: Path = Path(os.environ["VIRTUAL_ENV"])
+        env_name = env_dir.stem
+
+        namespace = SimpleNamespace(
+            env_dir=env_dir.as_posix(),
+            env_name=env_name,
+            bin_path=env_dir / "bin",
+            env_exe=env_dir / "bin/python",
+        )
+
+        return namespace
 
     def post_setup(self, context: SimpleNamespace):
         self.context = context
 
-    def venv_create(self) -> Optional[SimpleNamespace]:
-        self.create(self.venv_path)
+    def venv_create(self, venv_path: PathLike) -> Optional[SimpleNamespace]:
+        # This sets self.context because `create()` calls `post_setup()`
+        self.create(venv_path)
 
         return self.context
 
-    def run_python_in_venv(
-        self, command: list[str]
-    ) -> subprocess.CompletedProcess[bytes]:
-        assert self.context is not None
-        command = [self.context.env_exe] + command
-
-        return subprocess.run(command, check=True)
-
-    def run_bin_in_venv(
+    def run_bin(
         self, command: list[str], **kwargs
     ) -> subprocess.CompletedProcess[bytes]:
-        assert self.context is not None
-        command[0] = Path(self.context.bin_path).joinpath(command[0]).as_posix()
+        if self.context is not None:
+            command[0] = Path(self.context.bin_path).joinpath(command[0]).as_posix()
 
         return subprocess.run(command, check=True, **kwargs)
 
@@ -53,16 +62,11 @@ class _EnvBuilder(venv.EnvBuilder):
 class ProjectBuilder:
     def __init__(
         self,
-        project_name: Optional[str],
         template_path: PathLike = TEMPLATE_PATH,
         config_path: PathLike = CONFIG_PATH,
         config: Optional[dict[str, str]] = None,
     ) -> None:
-        if project_name is not None:
-            self._validate_project_name(project_name)
-            self._project_name = project_name
-
-        self._project_path = Path().cwd()
+        self.proj_path = Path().cwd()
 
         self._template_path = Path(template_path)
         self._config_path = Path(config_path)
@@ -77,10 +81,10 @@ class ProjectBuilder:
                 " and/or _, and they must begin and end with a letter or number."
             )
 
-    def _fill_in_templates(self) -> dict[str, str]:
+    def _fill_in_templates(self, project_name: str) -> dict[str, str]:
         config = self._config
         d = {
-            "PACKAGE": self._project_name,
+            "PACKAGE": project_name,
             "PYPI_USERNAME": config["pypi_username"],
             "PYPI_PASSWORD": config["pypi_password"],
             "GITHUB_URL": config["github_url"],
@@ -98,57 +102,60 @@ class ProjectBuilder:
 
         return filled_in_templates
 
-    def init_project(self):
+    def init_project(self, project_name: str):
         # Create the project directory
-        self._project_path.mkdir()
+        self._validate_project_name(project_name)
+
+        proj_path = self.proj_path / project_name
+        proj_path.mkdir()
 
         # src
-        src_path = self._project_path / "src"
+        src_path = proj_path / "src"
         src_path.mkdir()
 
-        src_proj_path = src_path / self._project_name
+        src_proj_path = src_path / project_name
         src_proj_path.mkdir()
         (src_proj_path / "__init__.py").touch()
         (src_proj_path / "py.typed").touch()
 
         # Fill in templates
-        templates = self._fill_in_templates()
+        templates = self._fill_in_templates(project_name)
 
         # tests
-        tests_path = self._project_path / "tests"
+        tests_path = proj_path / "tests"
         tests_path.mkdir()
-        (tests_path / f"test_{self._project_name}.py").touch()
+        (tests_path / f"test_{project_name}.py").touch()
 
         # benchmarks
-        benchmarks_path = self._project_path / "benchmarks"
+        benchmarks_path = proj_path / "benchmarks"
         benchmarks_path.mkdir()
         (benchmarks_path / "benchmark.py").touch()
 
         # github actions
-        workflows_path = self._project_path / ".github/workflows"
+        workflows_path = proj_path / ".github/workflows"
         workflows_path.mkdir(parents=True)
         (workflows_path / "tests.yml").write_text(templates["tests"])
 
         # misc setup
-        (self._project_path / "tox.ini").write_text(templates["tox"])
-        (self._project_path / "pyproject.toml").write_text(templates["pyproject"])
-        (self._project_path / "setup.cfg").write_text(templates["setup"])
-        (self._project_path / ".gitignore").write_text(templates["gitignore"])
-        (self._project_path / "README.md").write_text(templates["readme"])
+        (proj_path / "tox.ini").write_text(templates["tox"])
+        (proj_path / "pyproject.toml").write_text(templates["pyproject"])
+        (proj_path / "setup.cfg").write_text(templates["setup"])
+        (proj_path / ".gitignore").write_text(templates["gitignore"])
+        (proj_path / "README.md").write_text(templates["readme"])
 
         # Setup the virtual environment
 
-        venv_builder = _EnvBuilder(self._project_path / "venv", with_pip=True)
-        venv_builder.venv_create()
-        venv_builder.run_python_in_venv(["-m", "pip", "install", "-U", "pip"])
+        venv_builder = Env(with_pip=True)
+        venv_builder.venv_create(proj_path / "venv")
+        venv_builder.run_bin(["python", "-m", "pip", "install", "-U", "pip"])
 
         # Install developer dependencies
         for dep in ("black", "mypy", "build", "tox", "pytest"):
-            venv_builder.run_bin_in_venv(["pip", "install", dep])
+            venv_builder.run_bin(["pip", "install", dep])
 
         # Create requirements_dev file
-        reqs = venv_builder.run_bin_in_venv(["pip", "freeze"], capture_output=True)
-        (self._project_path / "requirements_dev.txt").write_bytes(reqs.stdout)
+        reqs = venv_builder.run_bin(["pip", "freeze"], capture_output=True)
+        (proj_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
     def _parse_config_file(self, filename: PathLike) -> dict:
         with open(self._config_path / filename) as f:
@@ -205,35 +212,21 @@ class ProjectBuilder:
         username = self._config["pypi_username"]
         password = self._config["pypi_password"]
 
-        try:
-            venv_path = Path(os.environ["VIRTUAL_ENV"]) / "bin"
-        except KeyError:
-            venv_path = ""
+        env = Env()
 
-        # TODO: Make EnvBuilder class capable of handling existing venvs, removing
-        # the need for this duplicate function
-        def run_bin_in_venv(
-            command: list[str], **kwargs
-        ) -> subprocess.CompletedProcess[bytes]:
-            command[0] = Path(venv_path).joinpath(command[0]).as_posix()
+        shutil.rmtree(self.proj_path / "dist", ignore_errors=True)
 
-            return subprocess.run(command, check=True, **kwargs)
-
-        shutil.rmtree(self._project_path / "dist", ignore_errors=True)
-
-        run_bin_in_venv(["python", "-m", "build"])
-        run_bin_in_venv(["twine", "check", "dist/*"])
+        env.run_bin(["python", "-m", "build"])
+        env.run_bin(["twine", "check", "dist/*"])
 
         if "" in (username, password):
-            run_bin_in_venv(["twine", "upload", "dist/*"])
+            env.run_bin(["twine", "upload", "dist/*"])
         else:
-            run_bin_in_venv(
-                ["twine", "upload", "dist/*", "-u", username, "-p", password]
-            )
+            env.run_bin(["twine", "upload", "dist/*", "-u", username, "-p", password])
 
-    def dispatch(self, action: Action):
+    def dispatch(self, action: Action, **kwargs):
         if action == "init":
-            self.init_project()
+            self.init_project(**kwargs)
         elif action == "upload":
             self.upload()
         elif action == "config":

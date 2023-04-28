@@ -77,8 +77,8 @@ def main():
         "reset_config": args.reset_config,
     }
 
-    builder = ProjectBuilder(project_name=args.project_name, config=config)
-    builder.dispatch(action=args.action)
+    builder = ProjectBuilder(config=config)
+    builder.dispatch(action=args.action, project_name=args.project_name)
 
 
 if __name__ == "__main__":
