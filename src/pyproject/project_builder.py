@@ -205,7 +205,7 @@ class ProjectBuilder:
     def config(self):
         config = self._config
         config["dependencies"] = list(config["dependencies"])
-        with open(self._config_path, "w") as f:
+        with open(self._config_path / "config.json", "w") as f:
             json.dump(config, f, indent=4)
 
     def upload(self):
