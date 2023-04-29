@@ -211,9 +211,8 @@ class ProjectBuilder:
             config[k] = self._parse_arg_to_set(config[k], sep=",")
 
         config["dependencies"] = (
-            config["dependencies"]
-            | config["add_dependencies"] - config["remove_dependencies"]
-        )
+            config["dependencies"] | config["add_dependencies"]
+        ) - config["remove_dependencies"]
 
         merged_config = {}
         for k, v in saved_config.items():
