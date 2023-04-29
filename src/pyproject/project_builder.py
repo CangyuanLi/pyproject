@@ -11,12 +11,16 @@ from types import SimpleNamespace
 from typing import Literal, Optional, Union
 import venv
 
+import platformdirs
+
 Action = Literal["init", "upload", "config"]
 PathLike = Union[Path, str]
 
 BASE_PATH = Path(__file__).resolve().parents[0]
 TEMPLATE_PATH = BASE_PATH / "templates"
-CONFIG_PATH = BASE_PATH / "config"
+USER_CONFIG_PATH = platformdirs.user_config_dir(
+    appname="pyproject-generator", appauthor="cangyuanli"
+)
 
 
 class Env(venv.EnvBuilder):
@@ -63,13 +67,15 @@ class ProjectBuilder:
     def __init__(
         self,
         template_path: PathLike = TEMPLATE_PATH,
-        config_path: PathLike = CONFIG_PATH,
+        user_config_dir: PathLike = USER_CONFIG_PATH,
         config: Optional[dict[str, str]] = None,
     ) -> None:
         self.proj_path = Path().cwd()
 
         self._template_path = Path(template_path)
-        self._config_path = Path(config_path)
+
+        self._user_config_dir = Path(user_config_dir)
+        self._create_config_dir()
         self._config = self._set_config(config)
 
     @staticmethod
@@ -80,6 +86,16 @@ class ProjectBuilder:
                 "A valid project name may only contain ASCII letters, numbers, ., -,"
                 " and/or _, and they must begin and end with a letter or number."
             )
+
+    def _create_config_dir(self) -> None:
+        self._user_config_dir.mkdir(exist_ok=True)
+        if not (self._user_config_dir / "config.json").exists():
+            shutil.copy(
+                BASE_PATH / "config/default_config.json",
+                self._user_config_dir / "config.json",
+            )
+
+        return None
 
     def _fill_in_templates(self, project_name: str) -> dict[str, str]:
         config = self._config
@@ -158,7 +174,12 @@ class ProjectBuilder:
         (proj_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
     def _parse_config_file(self, filename: PathLike) -> dict:
-        with open(self._config_path / filename) as f:
+        if filename == "default_config.json":
+            path = BASE_PATH / "config/default_config.json"
+        else:
+            path = self._user_config_dir / filename
+
+        with open(path) as f:
             config: dict = json.load(f)
 
         return config
@@ -205,7 +226,7 @@ class ProjectBuilder:
     def config(self):
         config = self._config
         config["dependencies"] = list(config["dependencies"])
-        with open(self._config_path / "config.json", "w") as f:
+        with open(self._user_config_dir / "config.json", "w") as f:
             json.dump(config, f, indent=4)
 
     def upload(self):
