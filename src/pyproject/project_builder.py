@@ -3,6 +3,7 @@
 import os
 import json
 from pathlib import Path
+import pprint
 import re
 import shutil
 import subprocess
@@ -220,6 +221,9 @@ class ProjectBuilder:
                 merged_config[k] = v
             else:
                 merged_config[k] = config[k]
+
+        if config["show"]:
+            pprint.pprint(merged_config)
 
         return merged_config
 

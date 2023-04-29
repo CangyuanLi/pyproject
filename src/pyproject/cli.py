@@ -46,6 +46,9 @@ def get_parser():
             "Remove dependencies to always download. Pass in a comma delimited string."
         ),
     )
+    parser.add_argument(
+        "--show", required=False, action="store_true", help="Show the current config"
+    )
 
     parser.add_argument(
         "-v",
@@ -75,6 +78,7 @@ def main():
         "add_dependencies": args.add_dependencies,
         "remove_dependencies": args.remove_dependencies,
         "reset_config": args.reset_config,
+        "show": args.show,
     }
 
     builder = ProjectBuilder(config=config)
