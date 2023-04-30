@@ -243,7 +243,7 @@ class ProjectBuilder:
         with open(self._user_config_dir / "config.json", "w") as f:
             json.dump(config, f, indent=4)
 
-    def update_config(self, config):
+    def update_config(self, config: dict):
         default = self._parse_config_file("default_config.json")
         merged_config = {}
         for k, v in default.items():
