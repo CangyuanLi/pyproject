@@ -5,6 +5,7 @@ from .project_builder import Action, ProjectBuilder
 from .__version__ import __version__
 
 ACTIONS = list(typing.get_args(Action))
+LICENSES = ("apache", "mit")
 
 
 def get_parser():
@@ -19,35 +20,40 @@ def get_parser():
         "--reset_config",
         required=False,
         action="store_true",
-        help="Reset configuration to default settings",
+        help="Reset configuration to default settings.",
     )
     parser.add_argument("--pypi_username", type=str, help="Set PyPI username")
     parser.add_argument("--pypi_password", type=str, help="Set PyPI password")
     parser.add_argument("--github_url", type=str, help="Set Github URL")
     parser.add_argument("--author", type=str, help="Set author name")
     parser.add_argument("--email", type=str, help="Set author email")
+    parser.add_argument("--license", type=str, choices=LICENSES, help="Set license")
     parser.add_argument(
         "--set_dependencies",
         type=str,
         help=(
             "Set dependencies to always download. Overwrites saved config. Pass in a"
-            " comma delimited string."
+            " comma delimited string"
         ),
     )
     parser.add_argument(
         "--add_dependencies",
         type=str,
-        help="Add dependencies to always download. Pass in a comma delimited string.",
+        help="Add dependencies to always download. Pass in a comma delimited string",
     )
     parser.add_argument(
         "--remove_dependencies",
         type=str,
-        help=(
-            "Remove dependencies to always download. Pass in a comma delimited string."
-        ),
+        help="Remove dependencies to always download. Pass in a comma delimited string",
     )
     parser.add_argument(
         "--show", required=False, action="store_true", help="Show the current config"
+    )
+    parser.add_argument(
+        "--update",
+        required=False,
+        action="store_true",
+        help="If there are new keys in the default config, add them to the user config",
     )
 
     parser.add_argument(
@@ -74,11 +80,13 @@ def main():
         "github_url": args.github_url,
         "author": args.author,
         "email": args.email,
+        "license": args.license,
         "set_dependencies": args.set_dependencies,
         "add_dependencies": args.add_dependencies,
         "remove_dependencies": args.remove_dependencies,
         "reset_config": args.reset_config,
         "show": args.show,
+        "update": args.update,
     }
 
     builder = ProjectBuilder(config=config)

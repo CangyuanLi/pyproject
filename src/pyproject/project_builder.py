@@ -1,5 +1,6 @@
 # Imports
 
+import datetime
 import os
 import json
 from pathlib import Path
@@ -107,6 +108,7 @@ class ProjectBuilder:
             "GITHUB_URL": config["github_url"],
             "AUTHOR": config["author"],
             "EMAIL": config["email"],
+            "YEAR": datetime.datetime.now().year,
         }
 
         filled_in_templates = {}
@@ -160,6 +162,9 @@ class ProjectBuilder:
         (proj_path / ".gitignore").write_text(templates["gitignore"])
         (proj_path / "README.md").write_text(templates["readme"])
 
+        license = self._config["license"]
+        (proj_path / "LICENSE").write_text(templates[f"license_{license}"])
+
         # Setup the virtual environment
 
         venv_builder = Env(with_pip=True)
@@ -177,8 +182,10 @@ class ProjectBuilder:
     def _parse_config_file(self, filename: PathLike) -> dict:
         if filename == "default_config.json":
             path = BASE_PATH / "config/default_config.json"
-        else:
+        elif filename == "config.json":
             path = self._user_config_dir / filename
+        else:
+            raise ValueError("Name wrong.")
 
         with open(path) as f:
             config: dict = json.load(f)
@@ -216,7 +223,9 @@ class ProjectBuilder:
 
         merged_config = {}
         for k, v in saved_config.items():
-            if config[k] is None:
+            if k not in config:
+                merged_config[k] = v
+            elif config[k] is None:
                 merged_config[k] = v
             else:
                 merged_config[k] = config[k]
@@ -224,13 +233,29 @@ class ProjectBuilder:
         if config["show"]:
             pprint.pprint(merged_config)
 
+        if config["update"]:
+            self.update_config(merged_config)
+
         return merged_config
 
-    def config(self):
-        config = self._config
+    def _write_config_file(self, config: dict):
         config["dependencies"] = list(config["dependencies"])
         with open(self._user_config_dir / "config.json", "w") as f:
             json.dump(config, f, indent=4)
+
+    def update_config(self, config):
+        default = self._parse_config_file("default_config.json")
+        merged_config = {}
+        for k, v in default.items():
+            if k not in config:
+                merged_config[k] = v
+            else:
+                merged_config[k] = config[k]
+
+        self._write_config_file(config)
+
+    def config(self):
+        self._write_config_file(self._config)
 
     def upload(self):
         username = self._config["pypi_username"]

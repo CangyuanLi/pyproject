@@ -4,6 +4,7 @@
     "github_url": "",
     "author": "",
     "email": "",
+    "license": "mit",
     "dependencies": [
         "mypy",
         "build",
