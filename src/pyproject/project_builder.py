@@ -285,7 +285,8 @@ class ProjectBuilder:
         return merged_config
 
     def _write_config_file(self, config: dict):
-        config["dependencies"] = list(config["dependencies"])
+        # set objects aren't serializable to json, so convert it to a list
+        config["dependencies"] = sorted(list(config["dependencies"]))
         with open(self._user_config_dir / "config.json", "w") as f:
             json.dump(config, f, indent=4)
 
