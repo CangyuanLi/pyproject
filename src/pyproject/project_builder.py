@@ -291,14 +291,21 @@ class ProjectBuilder:
             json.dump(config, f, indent=4)
 
     def config(self):
+        """If the action is `config`, save the built configuration as the default. This
+        method is intentionally sparse, as the bulk of the work should be done by
+        creating the config on the fly--we want the user to be able to pass config flags
+        in without going through the config action.
+        """
         self._write_config_file(self._config)
 
     def upload(self):
+        """Discover the virtual environment and upload project to PyPI."""
         username = self._config["pypi_username"]
         password = self._config["pypi_password"]
 
         env = Env()
 
+        # python -m build generates a dist folder, remove this in preparation
         shutil.rmtree(self.proj_path / "dist", ignore_errors=True)
 
         env.run_bin(["python", "-m", "build"])
