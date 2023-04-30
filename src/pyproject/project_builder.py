@@ -199,7 +199,7 @@ class ProjectBuilder:
         venv_builder.run_bin(["python", "-m", "pip", "install", "-U", "pip"])
 
         # Install developer dependencies
-        for dep in ("black", "mypy", "build", "tox", "pytest"):
+        for dep in self._config["dependencies"]:
             venv_builder.run_bin(["pip", "install", dep])
 
         # Create requirements_dev file
