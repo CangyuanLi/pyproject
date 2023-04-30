@@ -252,7 +252,7 @@ class ProjectBuilder:
             else:
                 merged_config[k] = config[k]
 
-        self._write_config_file(config)
+        self._write_config_file(merged_config)
 
     def config(self):
         self._write_config_file(self._config)
