@@ -245,12 +245,7 @@ class ProjectBuilder:
 
     def update_config(self, config: dict):
         default = self._parse_config_file("default_config.json")
-        merged_config = {}
-        for k, v in default.items():
-            if k not in config:
-                merged_config[k] = v
-            else:
-                merged_config[k] = config[k]
+        merged_config = default | config
 
         self._write_config_file(merged_config)
 
