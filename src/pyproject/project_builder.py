@@ -221,12 +221,32 @@ class ProjectBuilder:
 
     @staticmethod
     def _parse_arg_to_set(string: Optional[str], sep: str) -> set[str]:
+        """Expects a delimited string of arguments, e.g. `a,b,c,d`. Transforms string
+        into a set.
+
+        Args:
+            string (Optional[str]): `a,b,c,d`
+            sep (str): What to split on
+
+        Returns:
+            set[str]: string in set form
+        """
         if string is None:
             return set()
 
         return set(word.strip() for word in string.split(sep))
 
     def _set_config(self, config: dict[str, str]) -> dict:
+        """Take in the arguments provided by the user and merge them with their
+        saved configuration file.
+
+        Args:
+            config (dict[str, str]): Expects either the saved user configuration or the
+            default configuration (if --reset flag is set).
+
+        Returns:
+            dict: A configuration dict of {config_arg: config}
+        """
         if config["reset_config"]:
             saved_path = "default_config.json"
         else:
@@ -234,6 +254,8 @@ class ProjectBuilder:
 
         saved_config = self._parse_config_file(saved_path)
 
+        # --set_dependencies overrides the saved dependencies. So simply use saved
+        # if flag is not set, otherwise parse the list of provided dependencies.
         if config["set_dependencies"] is None:
             config["dependencies"] = set(saved_config["dependencies"])
         else:
@@ -241,6 +263,8 @@ class ProjectBuilder:
                 config["set_dependencies"], sep=","
             )
 
+        # --remove_dependencies and --add_dependencies don't overwrite. Parse them to a
+        # set so we can use union and difference operators.
         for k in ("remove_dependencies", "add_dependencies"):
             config[k] = self._parse_arg_to_set(config[k], sep=",")
 
