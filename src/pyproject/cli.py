@@ -49,12 +49,6 @@ def get_parser():
     parser.add_argument(
         "--show", required=False, action="store_true", help="Show the current config"
     )
-    parser.add_argument(
-        "--update",
-        required=False,
-        action="store_true",
-        help="If there are new keys in the default config, add them to the user config",
-    )
 
     parser.add_argument(
         "-v",
@@ -86,7 +80,6 @@ def main():
         "remove_dependencies": args.remove_dependencies,
         "reset_config": args.reset_config,
         "show": args.show,
-        "update": args.update,
     }
 
     builder = ProjectBuilder(config=config)

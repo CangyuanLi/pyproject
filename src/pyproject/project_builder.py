@@ -91,11 +91,18 @@ class ProjectBuilder:
 
     def _create_config_dir(self) -> None:
         self._user_config_dir.mkdir(exist_ok=True)
+
         if not (self._user_config_dir / "config.json").exists():
             shutil.copy(
                 BASE_PATH / "config/default_config.json",
                 self._user_config_dir / "config.json",
             )
+
+        config = self._parse_config_file("config.json")
+        default_config = self._parse_config_file("default_config.json")
+
+        config = default_config | config
+        self._write_config_file(config)
 
         return None
 
@@ -233,21 +240,12 @@ class ProjectBuilder:
         if config["show"]:
             pprint.pprint(merged_config)
 
-        if config["update"]:
-            self.update_config(merged_config)
-
         return merged_config
 
     def _write_config_file(self, config: dict):
         config["dependencies"] = list(config["dependencies"])
         with open(self._user_config_dir / "config.json", "w") as f:
             json.dump(config, f, indent=4)
-
-    def update_config(self, config: dict):
-        default = self._parse_config_file("default_config.json")
-        merged_config = default | config
-
-        self._write_config_file(merged_config)
 
     def config(self):
         self._write_config_file(self._config)
