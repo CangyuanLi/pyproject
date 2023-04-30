@@ -274,9 +274,7 @@ class ProjectBuilder:
 
         merged_config = {}
         for k, v in saved_config.items():
-            if k not in config:
-                merged_config[k] = v
-            elif config[k] is None:
+            if config[k] is None:
                 merged_config[k] = v
             else:
                 merged_config[k] = config[k]
