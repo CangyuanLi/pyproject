@@ -311,10 +311,17 @@ class ProjectBuilder:
         env.run_bin(["python", "-m", "build"])
         env.run_bin(["twine", "check", "dist/*"])
 
-        if "" in (username, password):
-            env.run_bin(["twine", "upload", "dist/*"])
+        if username == "" and password == "":
+            twine_args = []
+        elif username == "" and password != "":
+            twine_args = ["-p", password]
+            env.run_bin(["twine", "upload", "dist/*", "-p", password])
+        elif username != "" and password == "":
+            twine_args = ["-u", username]
         else:
-            env.run_bin(["twine", "upload", "dist/*", "-u", username, "-p", password])
+            twine_args = ["-u", username, "-p", password]
+
+        env.run_bin(["twine", "upload", "dist/*"] + twine_args)
 
     def dispatch(self, action: Action, **kwargs):
         if action == "init":
