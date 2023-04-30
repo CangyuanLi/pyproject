@@ -35,7 +35,7 @@ class Env(venv.EnvBuilder):
             self.context = None
             return None
 
-        env_dir: Path = Path(os.environ["VIRTUAL_ENV"])
+        env_dir = Path(os.environ["VIRTUAL_ENV"])
         env_name = env_dir.stem
 
         namespace = SimpleNamespace(
@@ -48,10 +48,10 @@ class Env(venv.EnvBuilder):
         return namespace
 
     def post_setup(self, context: SimpleNamespace):
+        # This sets self.context because `create()` calls `post_setup()`
         self.context = context
 
     def venv_create(self, venv_path: PathLike) -> Optional[SimpleNamespace]:
-        # This sets self.context because `create()` calls `post_setup()`
         self.create(venv_path)
 
         return self.context
@@ -59,6 +59,8 @@ class Env(venv.EnvBuilder):
     def run_bin(
         self, command: list[str], **kwargs
     ) -> subprocess.CompletedProcess[bytes]:
+        # Run commands in the virtual environment. If context is not none, we are in
+        # a virtual environment. Otherwise, let's just run it outside.
         if self.context is not None:
             command[0] = Path(self.context.bin_path).joinpath(command[0]).as_posix()
 
@@ -82,6 +84,7 @@ class ProjectBuilder:
 
     @staticmethod
     def _validate_project_name(project_name: str) -> None:
+        # https://packaging.python.org/en/latest/specifications/name-normalization/
         regex = "^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
         if not bool(re.match(regex, project_name, re.IGNORECASE)):
             raise ValueError(
@@ -90,6 +93,10 @@ class ProjectBuilder:
             )
 
     def _create_config_dir(self) -> None:
+        """Create the user config directory if it does not exist. Since the default
+        configuration may add keys, merge the two, preferring the
+        existing config so we don't overwrite user changes.
+        """
         self._user_config_dir.mkdir(exist_ok=True)
 
         if not (self._user_config_dir / "config.json").exists():
@@ -107,6 +114,14 @@ class ProjectBuilder:
         return None
 
     def _fill_in_templates(self, project_name: str) -> dict[str, str]:
+        """Loop through the the templates folder and fill in data.
+
+        Args:
+            project_name (str): User-supplied project name
+
+        Returns:
+            dict[str, str]: {file_stem: filled_in_template}
+        """
         config = self._config
         d = {
             "PACKAGE": project_name,
@@ -129,6 +144,11 @@ class ProjectBuilder:
         return filled_in_templates
 
     def init_project(self, project_name: str):
+        """Called when user specifies `action = init`.
+
+        Args:
+            project_name (str): User-supplied name of project
+        """
         # Create the project directory
         self._validate_project_name(project_name)
 
