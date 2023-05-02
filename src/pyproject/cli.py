@@ -1,11 +1,29 @@
 import argparse
 import typing
+from typing import Optional
 
 from .project_builder import Action, ProjectBuilder
 from .__version__ import __version__
 
 ACTIONS = list(typing.get_args(Action))
 LICENSES = ("apache", "mit")
+
+
+def _parse_arg_to_set(string: Optional[str], sep: str = ",") -> set[str]:
+    """Expects a delimited string of arguments, e.g. `a,b,c,d`. Transforms string
+    into a set.
+
+    Args:
+        string (Optional[str]): `a,b,c,d`
+        sep (str): What to split on
+
+    Returns:
+        set[str]: string in set form
+    """
+    if string is None:
+        return set()
+
+    return set(word.strip() for word in string.split(sep))
 
 
 def get_parser():
@@ -75,9 +93,9 @@ def main():
         "author": args.author,
         "email": args.email,
         "license": args.license,
-        "set_dependencies": args.set_dependencies,
-        "add_dependencies": args.add_dependencies,
-        "remove_dependencies": args.remove_dependencies,
+        "set_dependencies": _parse_arg_to_set(args.set_dependencies),
+        "add_dependencies": _parse_arg_to_set(args.add_dependencies),
+        "remove_dependencies": _parse_arg_to_set(args.remove_dependencies),
         "reset_config": args.reset_config,
         "show": args.show,
     }

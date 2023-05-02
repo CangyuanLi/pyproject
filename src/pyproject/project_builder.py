@@ -1,5 +1,8 @@
 # Imports
 
+from __future__ import annotations
+
+import dataclasses
 import datetime
 import os
 import json
@@ -10,19 +13,94 @@ import shutil
 import subprocess
 import string
 from types import SimpleNamespace
-from typing import Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 import venv
 
 import platformdirs
 
-Action = Literal["init", "upload", "config"]
-PathLike = Union[Path, str]
+# Globals
 
 BASE_PATH = Path(__file__).resolve().parents[0]
 TEMPLATE_PATH = BASE_PATH / "templates"
 USER_CONFIG_PATH = platformdirs.user_config_dir(
     appname="pyproject-generator", appauthor="cangyuanli"
 )
+
+# Types
+
+Action = Literal["init", "upload", "config"]
+PathLike = Union[Path, str]
+
+
+@dataclasses.dataclass
+class License:
+    short_name: str
+    proper_name: Optional[str] = None
+
+    def __post_init__(self):
+        if self.proper_name is None:
+            name_mapper = {"mit": "MIT", "apache": "Apache", "gpl_v3": "GPL v3"}
+            self.proper_name = name_mapper[self.short_name]
+
+
+@dataclasses.dataclass
+class Config:
+    pypi_username: str
+    pypi_password: str
+    github_url: str
+    author: str
+    email: str
+    license: License
+    dependencies: set[str]
+
+    def __post_init__(self):
+        if isinstance(self.license, str):
+            self.license = License(self.license)
+        self.dependencies = set(self.dependencies)
+
+    def to_json_representable(self) -> dict:
+        _dict = self.to_dict()
+        _dict["license"] = self.license.short_name
+        _dict["dependencies"] = list(self.dependencies)
+
+        return _dict
+
+    def to_dict(self) -> dict:
+        return self.__dict__.copy()
+
+    @classmethod
+    def merge(cls, config1: Config, config2: Config):
+        c1 = config1.to_dict()
+        c2 = config2.to_dict()
+        merged_config = {}
+        for k, v in c1.items():
+            if c2[k] is None:
+                merged_config[k] = v
+            else:
+                merged_config[k] = c1[k]
+
+        return Config(**merged_config)
+
+    def __or__(self, config2: Config) -> Config:
+        dct = self.to_dict() | config2.to_dict()
+
+        return Config(**dct)
+
+
+@dataclasses.dataclass
+class CLIConfig(Config):
+    set_dependencies: set[str]
+    add_dependencies: set[str]
+    remove_dependencies: set[str]
+    reset_config: bool
+    show: bool
+
+    def __post_init__(self):
+        self.dependencies = (
+            self.dependencies | self.add_dependencies
+        ) - self.remove_dependencies
+
+        return super().__post_init__()
 
 
 class Env(venv.EnvBuilder):
@@ -72,7 +150,7 @@ class ProjectBuilder:
         self,
         template_path: PathLike = TEMPLATE_PATH,
         user_config_dir: PathLike = USER_CONFIG_PATH,
-        config: Optional[dict[str, str]] = None,
+        config: dict[str, str] = None,
     ) -> None:
         self.proj_path = Path().cwd()
 
@@ -98,11 +176,12 @@ class ProjectBuilder:
         existing config so we don't overwrite user changes.
         """
         self._user_config_dir.mkdir(exist_ok=True)
+        config_file = self._user_config_dir / "config.json"
 
-        if not (self._user_config_dir / "config.json").exists():
+        if not config_file.exists() or config_file.stat().st_size == 0:
             shutil.copy(
                 BASE_PATH / "config/default_config.json",
-                self._user_config_dir / "config.json",
+                config_file,
             )
 
         config = self._parse_config_file("config.json")
@@ -125,12 +204,13 @@ class ProjectBuilder:
         config = self._config
         d = {
             "PACKAGE": project_name,
-            "PYPI_USERNAME": config["pypi_username"],
-            "PYPI_PASSWORD": config["pypi_password"],
-            "GITHUB_URL": config["github_url"],
-            "AUTHOR": config["author"],
-            "EMAIL": config["email"],
+            "PYPI_USERNAME": config.pypi_username,
+            "PYPI_PASSWORD": config.pypi_password,
+            "GITHUB_URL": config.github_url,
+            "AUTHOR": config.author,
+            "EMAIL": config.email,
             "YEAR": datetime.datetime.now().year,
+            "LICENSE": config.license.proper_name,
         }
 
         filled_in_templates = {}
@@ -189,7 +269,7 @@ class ProjectBuilder:
         (proj_path / ".gitignore").write_text(templates["gitignore"])
         (proj_path / "README.md").write_text(templates["readme"])
 
-        license = self._config["license"]
+        license = self._config.license.short_name
         (proj_path / "LICENSE").write_text(templates[f"license_{license}"])
 
         # Setup the virtual environment
@@ -199,14 +279,14 @@ class ProjectBuilder:
         venv_builder.run_bin(["python", "-m", "pip", "install", "-U", "pip"])
 
         # Install developer dependencies
-        for dep in self._config["dependencies"]:
+        for dep in self._config.dependencies:
             venv_builder.run_bin(["pip", "install", dep])
 
         # Create requirements_dev file
         reqs = venv_builder.run_bin(["pip", "freeze"], capture_output=True)
         (proj_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
-    def _parse_config_file(self, filename: PathLike) -> dict:
+    def _parse_config_file(self, filename: PathLike) -> Config:
         if filename == "default_config.json":
             path = BASE_PATH / "config/default_config.json"
         elif filename == "config.json":
@@ -217,32 +297,15 @@ class ProjectBuilder:
         with open(path) as f:
             config: dict = json.load(f)
 
-        return config
+        return Config(**config)
 
-    @staticmethod
-    def _parse_arg_to_set(string: Optional[str], sep: str) -> set[str]:
-        """Expects a delimited string of arguments, e.g. `a,b,c,d`. Transforms string
-        into a set.
-
-        Args:
-            string (Optional[str]): `a,b,c,d`
-            sep (str): What to split on
-
-        Returns:
-            set[str]: string in set form
-        """
-        if string is None:
-            return set()
-
-        return set(word.strip() for word in string.split(sep))
-
-    def _set_config(self, config: dict[str, str]) -> dict:
+    def _set_config(self, config: dict[str, str]) -> Config:
         """Take in the arguments provided by the user and merge them with their
         saved configuration file.
 
         Args:
-            config (dict[str, str]): Expects either the saved user configuration or the
-            default configuration (if --reset flag is set).
+            config (dict[str, str]): Expects either the saved user
+            configuration or the default configuration (if --reset flag is set).
 
         Returns:
             dict: A configuration dict of {config_arg: config}
@@ -257,38 +320,22 @@ class ProjectBuilder:
         # --set_dependencies overrides the saved dependencies. So simply use saved
         # if flag is not set, otherwise parse the list of provided dependencies.
         if config["set_dependencies"] is None:
-            config["dependencies"] = set(saved_config["dependencies"])
+            config["dependencies"] = saved_config.dependencies
         else:
-            config["dependencies"] = self._parse_arg_to_set(
-                config["set_dependencies"], sep=","
-            )
+            config["dependencies"] = config["set_dependencies"]
 
-        # --remove_dependencies and --add_dependencies don't overwrite. Parse them to a
-        # set so we can use union and difference operators.
-        for k in ("remove_dependencies", "add_dependencies"):
-            config[k] = self._parse_arg_to_set(config[k], sep=",")
+        _config = CLIConfig(**config)
 
-        config["dependencies"] = (
-            config["dependencies"] | config["add_dependencies"]
-        ) - config["remove_dependencies"]
+        merged_config = Config.merge(saved_config, _config)
 
-        merged_config = {}
-        for k, v in saved_config.items():
-            if config[k] is None:
-                merged_config[k] = v
-            else:
-                merged_config[k] = config[k]
-
-        if config["show"]:
-            pprint.pprint(merged_config)
+        if _config.show:
+            pprint.pprint(merged_config.to_json_representable())
 
         return merged_config
 
-    def _write_config_file(self, config: dict):
-        # set objects aren't serializable to json, so convert it to a list
-        config["dependencies"] = sorted(list(config["dependencies"]))
+    def _write_config_file(self, config: Config):
         with open(self._user_config_dir / "config.json", "w") as f:
-            json.dump(config, f, indent=4)
+            json.dump(config.to_json_representable(), f, indent=4)
 
     def config(self):
         """If the action is `config`, save the built configuration as the default. This
