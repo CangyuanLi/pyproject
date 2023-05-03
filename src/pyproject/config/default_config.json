@@ -6,11 +6,12 @@
     "email": "",
     "license": "mit",
     "dependencies": [
-        "mypy",
-        "build",
-        "tox",
-        "pytest",
         "black",
+        "build",
+        "mypy",
+        "pre-commit",
+        "pytest",
+        "tox",
         "twine"
     ]
 }
