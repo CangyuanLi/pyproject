@@ -1,5 +1,8 @@
-# pyproject: 
+# pyproject:
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pyproject)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 
 ## What is it?
 
@@ -21,7 +24,7 @@ Afterwards, a pyproject command will be exposed on your system.
 
 ## Running
 
-Simply run 
+Simply run
 ```sh
 pyproject init {project_name}
 ```
@@ -30,8 +33,8 @@ to create your project folder. It will automatically setup a package structure, 
 environment, and install packages.
 
 **pyproject** also allows you to configure your author name, email, Github url,
-PyPI username and password, and a list of default dependencies that you want to install. 
-Please note that your credentials are simply stored locally as plaintext. 
+PyPI username and password, and a list of default dependencies that you want to install.
+Please note that your credentials are simply stored locally as plaintext.
 If you do not wish to store them, you can simply pass them in manually
 via the --pypi_username and --pypi_password flags. To configure, run
 
