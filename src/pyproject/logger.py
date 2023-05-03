@@ -1,7 +1,5 @@
 from __future__ import annotations
 import enum
-import sys
-import time
 from typing import Optional
 
 from rich.console import Console
