@@ -3,6 +3,7 @@ import enum
 from typing import Callable, Optional
 
 from rich.console import Console
+import rich.pretty
 from .spinner import Spinner
 
 
@@ -21,6 +22,9 @@ class CustomConsole(Console):
     def __init__(self, logging_level: Level):
         super().__init__()
         self._level = logging_level
+
+    def pprint(self, *args, **kwargs):
+        rich.pretty.pprint(*args, **kwargs, console=self)
 
     def info(self, *args, **kwargs):
         if Level.INFO > self._level:

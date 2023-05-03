@@ -7,7 +7,6 @@ import datetime
 import os
 import json
 from pathlib import Path
-import pprint
 import re
 import shutil
 import subprocess
@@ -162,15 +161,15 @@ class ProjectBuilder:
 
         self._template_path = Path(template_path)
 
-        self._user_config_dir = Path(user_config_dir)
-        self._create_config_dir()
-        self._config = self._set_config(config)
-
+        # set up the console for logging
         self._logging_level = Level.INFO
         if options["quiet"]:
             self._logging_level = Level.ERROR
-
         self._console = CustomConsole(self._logging_level)
+
+        self._user_config_dir = Path(user_config_dir)
+        self._create_config_dir()
+        self._config = self._set_config(config)
 
     @staticmethod
     def _validate_project_name(project_name: str) -> None:
@@ -422,7 +421,7 @@ class ProjectBuilder:
         merged_config = Config.merge(saved_config, _config)
 
         if _config.show:
-            pprint.pprint(merged_config.to_json_representable())
+            self._console.pprint(merged_config.to_json_representable())
 
         return merged_config
 
