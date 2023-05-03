@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 import enum
 from typing import Callable, Optional
 
-from rich.console import Console
 import rich.pretty
+from rich.console import Console
+
 from .spinner import Spinner
 
 
@@ -50,6 +52,3 @@ class CustomConsole(Console):
 
         with Spinner(self, text, delay, prefix, suffix, clear, min_show_duration):
             return func()
-
-
-test
