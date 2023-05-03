@@ -50,3 +50,6 @@ class CustomConsole(Console):
 
         with Spinner(self, text, delay, prefix, suffix, clear, min_show_duration):
             return func()
+
+
+test
