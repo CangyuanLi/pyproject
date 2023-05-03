@@ -1,6 +1,6 @@
 from __future__ import annotations
 import enum
-from typing import Optional
+from typing import Callable, Optional
 
 from rich.console import Console
 from .spinner import Spinner
@@ -33,7 +33,7 @@ class CustomConsole(Console):
 
     def spinner(
         self,
-        func: callable,
+        func: Callable,
         text: str,
         delay: float = 0.1,
         prefix: str = "    ",
