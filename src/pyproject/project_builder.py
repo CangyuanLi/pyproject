@@ -12,11 +12,15 @@ import re
 import shutil
 import subprocess
 import string
+import sys
 from types import SimpleNamespace
-from typing import Any, Literal, Optional, Union
+from typing import Literal, Optional, Union
 import venv
 
 import platformdirs
+from rich.panel import Panel
+
+from .logger import CustomConsole, Level
 
 # Globals
 
@@ -61,7 +65,7 @@ class Config:
     def to_json_representable(self) -> dict:
         _dict = self.to_dict()
         _dict["license"] = self.license.short_name
-        _dict["dependencies"] = list(self.dependencies)
+        _dict["dependencies"] = sorted(list(self.dependencies))
 
         return _dict
 
@@ -106,6 +110,7 @@ class CLIConfig(Config):
 class Env(venv.EnvBuilder):
     def __init__(self, *args, **kwargs) -> None:
         self.context = self.get_context()
+
         super().__init__(*args, **kwargs)
 
     def get_context(self) -> Optional[SimpleNamespace]:
@@ -148,9 +153,10 @@ class Env(venv.EnvBuilder):
 class ProjectBuilder:
     def __init__(
         self,
+        config: dict,
+        options: dict,
         template_path: PathLike = TEMPLATE_PATH,
         user_config_dir: PathLike = USER_CONFIG_PATH,
-        config: dict[str, str] = None,
     ) -> None:
         self.proj_path = Path().cwd()
 
@@ -159,6 +165,12 @@ class ProjectBuilder:
         self._user_config_dir = Path(user_config_dir)
         self._create_config_dir()
         self._config = self._set_config(config)
+
+        self._logging_level = Level.INFO
+        if options["quiet"]:
+            self._logging_level = Level.ERROR
+
+        self._console = CustomConsole(self._logging_level)
 
     @staticmethod
     def _validate_project_name(project_name: str) -> None:
@@ -223,19 +235,8 @@ class ProjectBuilder:
 
         return filled_in_templates
 
-    def init_project(self, project_name: str):
-        """Called when user specifies `action = init`.
-
-        Args:
-            project_name (str): User-supplied name of project
-        """
-        # Create the project directory
-        self._validate_project_name(project_name)
-
-        proj_path = self.proj_path / project_name
-        proj_path.mkdir()
-
-        # src
+    @staticmethod
+    def _init_source_directory(proj_path: Path, project_name: str):
         src_path = proj_path / "src"
         src_path.mkdir()
 
@@ -244,25 +245,19 @@ class ProjectBuilder:
         (src_proj_path / "__init__.py").touch()
         (src_proj_path / "py.typed").touch()
 
-        # Fill in templates
-        templates = self._fill_in_templates(project_name)
-
-        # tests
+    @staticmethod
+    def _init_tests(proj_path: Path, project_name: str):
         tests_path = proj_path / "tests"
         tests_path.mkdir()
         (tests_path / f"test_{project_name}.py").touch()
 
-        # benchmarks
+    @staticmethod
+    def _init_benchmarks(proj_path: Path):
         benchmarks_path = proj_path / "benchmarks"
         benchmarks_path.mkdir()
         (benchmarks_path / "benchmark.py").touch()
 
-        # github actions
-        workflows_path = proj_path / ".github/workflows"
-        workflows_path.mkdir(parents=True)
-        (workflows_path / "tests.yml").write_text(templates["tests"])
-
-        # misc setup
+    def _init_config_files(self, proj_path: Path, templates: dict):
         (proj_path / "tox.ini").write_text(templates["tox"])
         (proj_path / "pyproject.toml").write_text(templates["pyproject"])
         (proj_path / "setup.cfg").write_text(templates["setup"])
@@ -272,19 +267,117 @@ class ProjectBuilder:
         license = self._config.license.short_name
         (proj_path / "LICENSE").write_text(templates[f"license_{license}"])
 
+    @staticmethod
+    def _init_github_actions(proj_path, templates: dict):
+        workflows_path = proj_path / ".github/workflows"
+        workflows_path.mkdir(parents=True)
+        (workflows_path / "tests.yml").write_text(templates["tests"])
+
+    def init_project(self, project_name: str):
+        """Called when user specifies `action = init`.
+
+        Args:
+            project_name (str): User-supplied name of project
+        """
+
+        # Create the project directory
+        try:
+            self._validate_project_name(project_name)
+        except ValueError as e:
+            self._console.error(str(e))
+            sys.exit(1)
+
+        proj_path = self.proj_path / project_name
+
+        try:
+            proj_path.mkdir()
+        except FileExistsError:
+            self._console.error(f"{proj_path} already exists")
+            sys.exit(1)
+
+        self._console.info(Panel("Creating project files..."), justify="left")
+
+        # Fill in templates
+        templates = self._console.spinner(
+            lambda: self._fill_in_templates(project_name),
+            "Filling in templates",
+            clear=True,
+            min_show_duration=0.2,
+        )
+
+        # src
+        self._console.spinner(
+            lambda: self._init_source_directory(proj_path, project_name),
+            "Creating source directory",
+            clear=True,
+            min_show_duration=0.2,
+        )
+
+        # tests
+        self._console.spinner(
+            lambda: self._init_tests(proj_path, project_name),
+            "Creating tests",
+            clear=True,
+            min_show_duration=0.2,
+        )
+
+        # benchmarks
+        self._console.spinner(
+            lambda: self._init_benchmarks(proj_path),
+            "Creating benchmarks",
+            clear=True,
+            min_show_duration=0.2,
+        )
+
+        # github actions
+        self._console.spinner(
+            lambda: self._init_github_actions(proj_path, templates),
+            "Setting up Github Actions",
+            clear=True,
+            min_show_duration=0.2,
+        )
+
+        # misc setup
+        self._console.spinner(
+            lambda: self._init_config_files(proj_path, templates),
+            "Setting up configuration files",
+            clear=True,
+            min_show_duration=0.2,
+        )
+
+        self._console.info("Building project skeleton completed with no errors.")
+
         # Setup the virtual environment
+        self._console.info(
+            Panel("Setting up the virtual environment..."), justify="left"
+        )
 
         venv_builder = Env(with_pip=True)
         venv_builder.venv_create(proj_path / "venv")
-        venv_builder.run_bin(["python", "-m", "pip", "install", "-U", "pip"])
 
         # Install developer dependencies
-        for dep in self._config.dependencies:
-            venv_builder.run_bin(["pip", "install", dep])
+
+        self._console.spinner(
+            lambda: venv_builder.run_bin(
+                ["python", "-m", "pip", "install", "-U", "pip"],
+                stdout=subprocess.DEVNULL,
+            ),
+            text="pip",
+        )
+
+        for dep in sorted(list(self._config.dependencies)):
+            self._console.spinner(
+                lambda: venv_builder.run_bin(
+                    ["pip", "install", dep], stdout=subprocess.DEVNULL
+                ),
+                text=dep,
+            )
 
         # Create requirements_dev file
         reqs = venv_builder.run_bin(["pip", "freeze"], capture_output=True)
         (proj_path / "requirements_dev.txt").write_bytes(reqs.stdout)
+
+        self._console.info(f"Done setting up {project_name}!", style="green")
 
     def _parse_config_file(self, filename: PathLike) -> Config:
         if filename == "default_config.json":
@@ -347,8 +440,8 @@ class ProjectBuilder:
 
     def upload(self):
         """Discover the virtual environment and upload project to PyPI."""
-        username = self._config["pypi_username"]
-        password = self._config["pypi_password"]
+        username = self._config.pypi_username
+        password = self._config.pypi_password
 
         env = Env()
 
