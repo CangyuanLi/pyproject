@@ -4,17 +4,17 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
-import os
 import json
-from pathlib import Path
+import os
 import re
 import shutil
-import subprocess
 import string
+import subprocess
 import sys
+import venv
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Literal, Optional, Union
-import venv
 
 import platformdirs
 from rich.panel import Panel
@@ -262,6 +262,9 @@ class ProjectBuilder:
         (proj_path / "setup.cfg").write_text(templates["setup"])
         (proj_path / ".gitignore").write_text(templates["gitignore"])
         (proj_path / "README.md").write_text(templates["readme"])
+        (proj_path / ".pre-commit-config.yaml").write_text(
+            templates["pre_commit_config"]
+        )
 
         license = self._config.license.short_name
         (proj_path / "LICENSE").write_text(templates[f"license_{license}"])
@@ -372,9 +375,28 @@ class ProjectBuilder:
                 text=dep,
             )
 
+        self._console.info(Panel("Finalizing project..."), justify="left")
+
         # Create requirements_dev file
-        reqs = venv_builder.run_bin(["pip", "freeze"], capture_output=True)
-        (proj_path / "requirements_dev.txt").write_bytes(reqs.stdout)
+        def _create_req_file():
+            reqs = venv_builder.run_bin(["pip", "freeze"], capture_output=True)
+            (proj_path / "requirements_dev.txt").write_bytes(reqs.stdout)
+
+        self._console.spinner(
+            _create_req_file,
+            "Creating requirements_dev.txt",
+            clear=True,
+            min_show_duration=0.2,
+        )
+
+        # Ensure pre-commit is up to date
+        self._console.spinner(
+            lambda: venv_builder.run_bin(
+                ["pre-commit", "autoupdate"], stdout=subprocess.DEVNULL
+            ),
+            "Ensuring pre-commit config is up to date",
+            clear=True,
+        )
 
         self._console.info(f"Done setting up {project_name}!", style="green")
 
