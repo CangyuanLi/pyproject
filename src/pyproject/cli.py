@@ -67,6 +67,9 @@ def get_parser():
     parser.add_argument(
         "--show", required=False, action="store_true", help="Show the current config"
     )
+    parser.add_argument(
+        "--quiet", required=False, action="store_true", help="Supress logging"
+    )
 
     parser.add_argument(
         "-v",
@@ -86,7 +89,9 @@ def main():
     if args.action == "init" and args.project_name is None:
         parser.error("init requires project name")
 
-    config: dict[str, str] = {
+    options = {"quiet": args.quiet}
+
+    config = {
         "pypi_username": args.pypi_username,
         "pypi_password": args.pypi_password,
         "github_url": args.github_url,
@@ -100,7 +105,7 @@ def main():
         "show": args.show,
     }
 
-    builder = ProjectBuilder(config=config)
+    builder = ProjectBuilder(config=config, options=options)
     builder.dispatch(action=args.action, project_name=args.project_name)
 
 
