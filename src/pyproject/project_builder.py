@@ -392,7 +392,7 @@ class ProjectBuilder:
 
         return Config(**config)
 
-    def _set_config(self, config: dict[str, str]) -> Config:
+    def _set_config(self, config: dict) -> Config:
         """Take in the arguments provided by the user and merge them with their
         saved configuration file.
 
