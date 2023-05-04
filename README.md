@@ -1,6 +1,7 @@
 # pyproject:
 [![PyPI version](https://badge.fury.io/py/pyproject-generator.svg)](https://badge.fury.io/py/pyproject-generator)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pyproject)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -63,11 +64,12 @@ The final project structure looks like
 └── tox.ini
 ```
 
-**pyproject** also allows you to configure your author name, email, Github url,
+**pyproject** also allows you to configure your author name, email, Github URL,
 PyPI username and password, and a list of default dependencies that you want to install.
 Please note that your credentials are simply stored locally as plaintext.
 If you do not wish to store them, you can simply pass them in manually
-via the --pypi_username and --pypi_password flags. To configure, run
+via the --pypi_username and --pypi_password flags, or run without any flags and type
+them in as required. To configure, run
 
 ```sh
 pyproject config --author="" --email="" --github_url="" --pypi_username="" --pypi_password=""
