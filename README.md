@@ -15,6 +15,9 @@
 
 ## Dependencies
 
+- [platformdirs](https://pypi.org/project/platformdirs/) - Install configuration files in the correct location
+- [rich](https://pypi.org/project/rich/) - Beautiful terminal output
+
 ## Installing
 
 The easiest way is to install **pyproject** is from PyPI using pip:
