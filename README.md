@@ -29,7 +29,7 @@ pip install pyproject-generator
 
 Afterwards, a pyproject command will be exposed on your system.
 
-## Running
+## Initializing a Project
 
 Simply run
 ```sh
@@ -64,6 +64,8 @@ The final project structure looks like
 └── tox.ini
 ```
 
+## Configuring pyproject-generator
+
 **pyproject** also allows you to configure your author name, email, Github URL,
 PyPI username and password, and a list of default dependencies that you want to install.
 Please note that your credentials are simply stored locally as plaintext.
@@ -93,6 +95,11 @@ And you may remove dependencies:
 ```sh
 pyproject config --remove_dependencies
 ```
+
+Note that these flags also work with the `init` action. `config` merely does the work
+of saving them locally to be re-used later.
+
+## Uploading a Project
 
 **pyproject** also supplies an upload function. Run
 
