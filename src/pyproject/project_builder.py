@@ -19,6 +19,7 @@ from typing import Literal, Optional, Union
 import platformdirs
 from rich.panel import Panel
 
+from .licenses import LICENSES, License
 from .logger import CustomConsole, Level
 
 # Globals
@@ -29,27 +30,10 @@ USER_CONFIG_PATH = platformdirs.user_config_dir(
     appname="pyproject-generator", appauthor="cangyuanli"
 )
 
-LICENSE_NAME_MAPPER = {
-    "mit": "MIT",
-    "apache": "Apache",
-    "gpl_v3": "GPL v3",
-    "bsd3": "BSD 3-Clause",
-}
-
 # Types
 
 Action = Literal["init", "upload", "config"]
 PathLike = Union[Path, str]
-
-
-@dataclasses.dataclass
-class License:
-    short_name: str
-    proper_name: Optional[str] = None
-
-    def __post_init__(self):
-        if self.proper_name is None:
-            self.proper_name = LICENSE_NAME_MAPPER[self.short_name]
 
 
 @dataclasses.dataclass
@@ -64,7 +48,7 @@ class Config:
 
     def __post_init__(self):
         if isinstance(self.license, str):
-            self.license = License(self.license)
+            self.license = LICENSES[self.license]
         self.dependencies = set(self.dependencies)
 
     def to_json_representable(self) -> dict:

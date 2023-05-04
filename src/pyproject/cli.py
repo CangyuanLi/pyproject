@@ -3,10 +3,11 @@ import typing
 from typing import Optional
 
 from .__version__ import __version__
-from .project_builder import LICENSE_NAME_MAPPER, Action, ProjectBuilder
+from .licenses import LICENSES
+from .project_builder import Action, ProjectBuilder
 
 ACTIONS = list(typing.get_args(Action))
-LICENSES = list(LICENSE_NAME_MAPPER.keys())
+ALLOWED_LICENSES = list(LICENSES.keys())
 
 
 def _parse_arg_to_set(string: Optional[str], sep: str = ",") -> set[str]:
@@ -45,7 +46,9 @@ def get_parser():
     parser.add_argument("--github_url", type=str, help="Set Github URL")
     parser.add_argument("--author", type=str, help="Set author name")
     parser.add_argument("--email", type=str, help="Set author email")
-    parser.add_argument("--license", type=str, choices=LICENSES, help="Set license")
+    parser.add_argument(
+        "--license", type=str, choices=ALLOWED_LICENSES, help="Set license"
+    )
     parser.add_argument(
         "--set_dependencies",
         type=str,
