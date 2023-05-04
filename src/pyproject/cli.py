@@ -2,11 +2,11 @@ import argparse
 import typing
 from typing import Optional
 
-from .project_builder import Action, ProjectBuilder
 from .__version__ import __version__
+from .project_builder import LICENSE_NAME_MAPPER, Action, ProjectBuilder
 
 ACTIONS = list(typing.get_args(Action))
-LICENSES = ("apache", "mit")
+LICENSES = list(LICENSE_NAME_MAPPER.keys())
 
 
 def _parse_arg_to_set(string: Optional[str], sep: str = ",") -> set[str]:

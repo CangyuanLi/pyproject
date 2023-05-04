@@ -29,6 +29,13 @@ USER_CONFIG_PATH = platformdirs.user_config_dir(
     appname="pyproject-generator", appauthor="cangyuanli"
 )
 
+LICENSE_NAME_MAPPER = {
+    "mit": "MIT",
+    "apache": "Apache",
+    "gpl_v3": "GPL v3",
+    "bsd3": "BSD 3-Clause",
+}
+
 # Types
 
 Action = Literal["init", "upload", "config"]
@@ -42,13 +49,7 @@ class License:
 
     def __post_init__(self):
         if self.proper_name is None:
-            name_mapper = {
-                "mit": "MIT",
-                "apache": "Apache",
-                "gpl_v3": "GPL v3",
-                "bsd3": "BSD 3-Clause",
-            }
-            self.proper_name = name_mapper[self.short_name]
+            self.proper_name = LICENSE_NAME_MAPPER[self.short_name]
 
 
 @dataclasses.dataclass
