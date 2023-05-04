@@ -8,8 +8,8 @@ from rich.console import Console
 
 BACKSPACE = "\b"
 CLEAR_LINE = "\033[K"
-CHECKMARK = "\u2713"
-XMARK = "\u274C"
+CHECKMARK = "[green]\u2713[/green]"
+XMARK = "[red]\u274C[/red]"
 
 
 class Spinner:
