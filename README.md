@@ -77,23 +77,24 @@ them in as required. To configure, run
 pyproject config --author="" --email="" --github_url="" --pypi_username="" --pypi_password=""
 ```
 
-You may set dependencies one of three ways. In all cases, pass in a comma-delimited string.
+You may set dependencies one of three ways. In all cases, pass in a comma-delimited
+string (for multiple dependencies) or a string (for one dependency).
 You can set the dependencies, which overrides the default settings.
 
 ```sh
-pyproject config --set_dependencies
+pyproject config --set_dependencies="white,ruff,mypy"
 ```
 
 You may add dependencies:
 
 ```sh
-pyproject config --add_dependencies
+pyproject config --add_dependencies="django"
 ```
 
 And you may remove dependencies:
 
 ```sh
-pyproject config --remove_dependencies
+pyproject config --remove_dependencies="pre-commit"
 ```
 
 Note that these flags also work with the `init` action. `config` merely does the work
