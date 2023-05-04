@@ -1,4 +1,5 @@
 # pyproject:
+[![PyPI version](https://badge.fury.io/py/pyproject-generator.svg)](https://badge.fury.io/py/pyproject-generator)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pyproject)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
