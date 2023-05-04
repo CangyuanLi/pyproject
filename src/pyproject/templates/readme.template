@@ -1,6 +1,7 @@
 # $PACKAGE:
 [![PyPI version](https://badge.fury.io/py/$PACKAGE.svg)](https://badge.fury.io/py/$PACKAGE)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/$PACKAGE)
+[![License: $LICENSE]($LICENSE_BADGE)]($LICENSE_LINK)
 ![Tests]($GITHUB_URL/$PACKAGE/actions/workflows/tests.yml/badge.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)

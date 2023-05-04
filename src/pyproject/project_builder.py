@@ -212,6 +212,8 @@ class ProjectBuilder:
             "EMAIL": config.email,
             "YEAR": datetime.datetime.now().year,
             "LICENSE": config.license.proper_name,
+            "LICENSE_BADGE": config.license.badge_url,
+            "LICENSE_LINK": config.license.link,
         }
 
         filled_in_templates = {}
