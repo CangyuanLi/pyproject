@@ -34,6 +34,29 @@ pyproject init {project_name}
 to create your project folder. It will automatically setup a package structure, virtual
 environment, and install packages.
 
+The final project structure looks like
+
+```sh
+├── .github
+│   └── workflows
+│       └── tests.yml
+├── .gitignore
+├── LICENSE
+├── README.md
+├── benchmarks
+│   └── benchmark.py
+├── pyproject.toml
+├── requirements_dev.txt
+├── setup.cfg
+├── src
+│   └── myproject
+│       ├── __init__.py
+│       └── py.typed
+├── tests
+│   └── test_myproject.py
+└── tox.ini
+```
+
 **pyproject** also allows you to configure your author name, email, Github url,
 PyPI username and password, and a list of default dependencies that you want to install.
 Please note that your credentials are simply stored locally as plaintext.
