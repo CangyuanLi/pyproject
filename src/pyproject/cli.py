@@ -4,6 +4,7 @@ from typing import Optional
 
 from .__version__ import __version__
 from .licenses import LICENSES
+from .logger import Level, Logger
 from .project_builder import Action, ProjectBuilder
 
 ACTIONS = list(typing.get_args(Action))
@@ -89,10 +90,16 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.action == "init" and args.project_name is None:
-        parser.error("init requires project name")
-
     options = {"quiet": args.quiet}
+
+    # set up the console for logging
+    logging_level = Level.INFO
+    if options["quiet"]:
+        logging_level = Level.ERROR
+    logger = Logger(logging_level)
+
+    if args.action == "init" and args.project_name is None:
+        logger.error("init requires project name")
 
     config = {
         "pypi_username": args.pypi_username,
@@ -108,7 +115,7 @@ def main():
         "show": args.show,
     }
 
-    builder = ProjectBuilder(config=config, options=options)
+    builder = ProjectBuilder(config=config, options=options, logger=logger)
     builder.dispatch(action=args.action, project_name=args.project_name)
 
 

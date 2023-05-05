@@ -20,7 +20,7 @@ import platformdirs
 from rich.panel import Panel
 
 from .licenses import LICENSES, License
-from .logger import Level, Logger
+from .logger import Logger
 
 # Globals
 
@@ -144,18 +144,14 @@ class ProjectBuilder:
         self,
         config: dict,
         options: dict,
+        logger: Logger,
         template_path: PathLike = TEMPLATE_PATH,
         user_config_dir: PathLike = USER_CONFIG_PATH,
     ) -> None:
         self.proj_path = Path().cwd()
 
         self._template_path = Path(template_path)
-
-        # set up the console for logging
-        self._logging_level = Level.INFO
-        if options["quiet"]:
-            self._logging_level = Level.ERROR
-        self._logger = Logger(self._logging_level)
+        self._logger = logger
 
         self._user_config_dir = Path(user_config_dir)
         self._create_config_dir()
