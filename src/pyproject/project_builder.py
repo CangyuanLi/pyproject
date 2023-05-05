@@ -20,7 +20,7 @@ import platformdirs
 from rich.panel import Panel
 
 from .licenses import LICENSES, License
-from .logger import CustomConsole, Level
+from .logger import Level, Logger
 
 # Globals
 
@@ -155,7 +155,7 @@ class ProjectBuilder:
         self._logging_level = Level.INFO
         if options["quiet"]:
             self._logging_level = Level.ERROR
-        self._console = CustomConsole(self._logging_level)
+        self._logger = Logger(self._logging_level)
 
         self._user_config_dir = Path(user_config_dir)
         self._create_config_dir()
@@ -278,7 +278,7 @@ class ProjectBuilder:
         try:
             self._validate_project_name(project_name)
         except ValueError as e:
-            self._console.error(str(e))
+            self._logger.error(str(e))
             sys.exit(1)
 
         proj_path = self.proj_path / project_name
@@ -286,13 +286,13 @@ class ProjectBuilder:
         try:
             proj_path.mkdir()
         except FileExistsError:
-            self._console.error(f"{proj_path} already exists")
+            self._logger.error(f"{proj_path} already exists")
             sys.exit(1)
 
-        self._console.info(Panel("Creating project files..."), justify="left")
+        self._logger.info(Panel("Creating project files..."), justify="left")
 
         # Fill in templates
-        templates = self._console.spinner(
+        templates = self._logger.spinner(
             lambda: self._fill_in_templates(project_name),
             "Filling in templates",
             clear=True,
@@ -300,7 +300,7 @@ class ProjectBuilder:
         )
 
         # src
-        self._console.spinner(
+        self._logger.spinner(
             lambda: self._init_source_directory(proj_path, project_name),
             "Creating source directory",
             clear=True,
@@ -308,7 +308,7 @@ class ProjectBuilder:
         )
 
         # tests
-        self._console.spinner(
+        self._logger.spinner(
             lambda: self._init_tests(proj_path, project_name),
             "Creating tests",
             clear=True,
@@ -316,7 +316,7 @@ class ProjectBuilder:
         )
 
         # benchmarks
-        self._console.spinner(
+        self._logger.spinner(
             lambda: self._init_benchmarks(proj_path),
             "Creating benchmarks",
             clear=True,
@@ -324,7 +324,7 @@ class ProjectBuilder:
         )
 
         # github actions
-        self._console.spinner(
+        self._logger.spinner(
             lambda: self._init_github_actions(proj_path, templates),
             "Setting up Github Actions",
             clear=True,
@@ -332,17 +332,17 @@ class ProjectBuilder:
         )
 
         # misc setup
-        self._console.spinner(
+        self._logger.spinner(
             lambda: self._init_config_files(proj_path, templates),
             "Setting up configuration files",
             clear=True,
             min_show_duration=0.2,
         )
 
-        self._console.info("Building project skeleton completed with no errors.")
+        self._logger.info("Building project skeleton completed with no errors.")
 
         # Setup the virtual environment
-        self._console.info(
+        self._logger.info(
             Panel("Setting up the virtual environment..."), justify="left"
         )
 
@@ -351,7 +351,7 @@ class ProjectBuilder:
 
         # Install developer dependencies
 
-        self._console.spinner(
+        self._logger.spinner(
             lambda: venv_builder.run_bin(
                 ["python", "-m", "pip", "install", "-U", "pip"],
                 stdout=subprocess.DEVNULL,
@@ -360,21 +360,21 @@ class ProjectBuilder:
         )
 
         for dep in sorted(list(self._config.dependencies)):
-            self._console.spinner(
+            self._logger.spinner(
                 lambda: venv_builder.run_bin(
                     ["pip", "install", dep], stdout=subprocess.DEVNULL
                 ),
                 text=dep,
             )
 
-        self._console.info(Panel("Finalizing project..."), justify="left")
+        self._logger.info(Panel("Finalizing project..."), justify="left")
 
         # Create requirements_dev file
         def _create_req_file():
             reqs = venv_builder.run_bin(["pip", "freeze"], capture_output=True)
             (proj_path / "requirements_dev.txt").write_bytes(reqs.stdout)
 
-        self._console.spinner(
+        self._logger.spinner(
             _create_req_file,
             "Creating requirements_dev.txt",
             clear=True,
@@ -382,7 +382,7 @@ class ProjectBuilder:
         )
 
         # Ensure pre-commit is up to date
-        self._console.spinner(
+        self._logger.spinner(
             lambda: venv_builder.run_bin(
                 ["pre-commit", "autoupdate"], stdout=subprocess.DEVNULL
             ),
@@ -390,7 +390,7 @@ class ProjectBuilder:
             clear=True,
         )
 
-        self._console.info(f"Done setting up {project_name}!", style="green")
+        self._logger.info(f"Done setting up {project_name}!", style="green")
 
     def _parse_config_file(self, filename: PathLike) -> Config:
         if filename == "default_config.json":
@@ -435,7 +435,7 @@ class ProjectBuilder:
         merged_config = Config.merge(saved_config, _config)
 
         if _config.show:
-            self._console.pprint(merged_config.to_json_representable())
+            self._logger.pprint(merged_config.to_json_representable())
 
         return merged_config
 
