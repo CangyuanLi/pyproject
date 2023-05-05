@@ -45,7 +45,7 @@ The final project structure looks like
 
 ```sh
 ├── .git
-├── .github
+── .github
 │   └── workflows
 │       └── tests.yml
 ├── .gitignore
@@ -60,6 +60,7 @@ The final project structure looks like
 ├── src
 │   └── myproject
 │       ├── __init__.py
+│       ├── __version__.py
 │       └── py.typed
 ├── tests
 │   └── test_myproject.py
