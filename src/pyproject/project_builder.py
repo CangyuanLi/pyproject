@@ -222,8 +222,8 @@ class ProjectBuilder:
         return filled_in_templates
 
     @staticmethod
-    def _init_git():
-        subprocess.run(["git", "init"], stdout=subprocess.DEVNULL)
+    def _init_git(proj_path: Path):
+        subprocess.run(["git", "init"], cwd=proj_path, stdout=subprocess.DEVNULL)
 
     @staticmethod
     def _init_source_directory(proj_path: Path, project_name: str):
@@ -298,7 +298,7 @@ class ProjectBuilder:
 
         # initialize git repo
         self._logger.spinner(
-            self._init_git,
+            lambda: self._init_git(proj_path),
             "Initializing git repository",
             clear=True,
             min_show_duration=0.2,
