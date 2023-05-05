@@ -375,7 +375,7 @@ class ProjectBuilder:
         # Ensure pre-commit is up to date
         self._logger.spinner(
             lambda: venv_builder.run_bin(
-                ["pre-commit", "autoupdate"], stdout=subprocess.DEVNULL
+                ["pre-commit", "autoupdate"], cwd=proj_path, stdout=subprocess.DEVNULL
             ),
             "Ensuring pre-commit config is up to date",
             clear=True,
