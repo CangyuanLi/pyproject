@@ -357,7 +357,7 @@ class ProjectBuilder:
         )
 
         not_installed = []
-        for dep in sorted(list(self._config.dependencies)) + ["a;sldkfja;lsdjfk"]:
+        for dep in sorted(list(self._config.dependencies)):
             try:
                 self._logger.spinner(
                     lambda: venv_builder.run_bin(
