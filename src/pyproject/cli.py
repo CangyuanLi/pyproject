@@ -7,8 +7,8 @@ from .licenses import LICENSES
 from .logger import Level, Logger
 from .project_builder import Action, ProjectBuilder
 
-ACTIONS = list(typing.get_args(Action))
-ALLOWED_LICENSES = list(LICENSES.keys())
+ACTIONS = typing.get_args(Action)
+ALLOWED_LICENSES = tuple(LICENSES.keys())
 
 
 def _parse_arg_to_set(string: Optional[str], sep: str = ",") -> set[str]:
@@ -31,7 +31,7 @@ def _parse_arg_to_set(string: Optional[str], sep: str = ",") -> set[str]:
 def get_parser():
     parser = argparse.ArgumentParser(description="Generate python project")
 
-    parser.add_argument("action", type=str, choices=ACTIONS, help="Action")
+    parser.add_argument("action", type=str, help="Action")
     parser.add_argument(
         "project_name", type=str, nargs="?", default=None, help="Name of the project"
     )
@@ -47,9 +47,7 @@ def get_parser():
     parser.add_argument("--github_url", type=str, help="Set Github URL")
     parser.add_argument("--author", type=str, help="Set author name")
     parser.add_argument("--email", type=str, help="Set author email")
-    parser.add_argument(
-        "--license", type=str, choices=ALLOWED_LICENSES, help="Set license"
-    )
+    parser.add_argument("--license", type=str, help="Set license")
     parser.add_argument(
         "--set_dependencies",
         type=str,
@@ -98,8 +96,14 @@ def main():
         logging_level = Level.ERROR
     logger = Logger(logging_level)
 
+    if args.action not in ACTIONS:
+        logger.error(f"Invalid choice `{args.action}`, choose from {ACTIONS}")
+
     if args.action == "init" and args.project_name is None:
-        logger.error("init requires project name")
+        logger.error("Action `init` requires project name")
+
+    if args.license not in LICENSES and args.license is not None:
+        logger.error(f"Invalid choice `{args.license}`, choose from {ALLOWED_LICENSES}")
 
     config = {
         "pypi_username": args.pypi_username,
