@@ -9,7 +9,7 @@ from rich.console import Console
 BACKSPACE = "\b"
 CLEAR_LINE = "\033[K"
 CHECKMARK = "[green]\u2713[/green]"
-XMARK = "[red]\u274C[/red]"
+XMARK = "[red]\u2717[/red]"
 
 
 class Spinner:
@@ -84,14 +84,19 @@ class Spinner:
             self.thread = threading.Thread(target=self.spinner_task)
             self.thread.start()
 
-    def __exit__(self, exception: Optional[BaseException], value, tb):
-        if exception is not None:
+    def __exit__(
+        self, exception_type: Optional[BaseException], exception_value, traceback
+    ):
+        end_mark = CHECKMARK
+
+        if exception_type is not None:
             end_mark = XMARK
-        else:
-            end_mark = CHECKMARK
 
         if sys.stdout.isatty():
             self.busy = False
             self.remove_spinner(end_mark, cleanup=True)
         else:
             sys.stdout.write("\r")
+
+        if exception_type is not None:
+            raise exception_value

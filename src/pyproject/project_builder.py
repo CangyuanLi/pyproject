@@ -20,6 +20,7 @@ from rich.panel import Panel
 
 from .licenses import LICENSES, License
 from .logger import Logger
+from .utils import squash_iterable
 
 # Globals
 
@@ -355,14 +356,21 @@ class ProjectBuilder:
             clear=False,
         )
 
-        for dep in sorted(list(self._config.dependencies)):
-            self._logger.spinner(
-                lambda: venv_builder.run_bin(
-                    ["pip", "install", dep], stdout=subprocess.DEVNULL
-                ),
-                text=dep,
-                clear=False,
-            )
+        not_installed = []
+        for dep in sorted(list(self._config.dependencies)) + ["a;sldkfja;lsdjfk"]:
+            try:
+                self._logger.spinner(
+                    lambda: venv_builder.run_bin(
+                        ["pip", "install", dep],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    ),
+                    text=dep,
+                    clear=False,
+                )
+            except subprocess.CalledProcessError:
+                not_installed.append(dep)
+        self._logger.warning(f"Failed to install {squash_iterable(not_installed)}")
 
         self._logger.info(Panel("Finalizing project..."), justify="left")
 
