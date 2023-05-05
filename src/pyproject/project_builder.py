@@ -292,56 +292,42 @@ class ProjectBuilder:
         templates = self._logger.spinner(
             lambda: self._fill_in_templates(project_name),
             "Filling in templates",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         # initialize git repo
         self._logger.spinner(
             lambda: self._init_git(proj_path),
             "Initializing git repository",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         # src
         self._logger.spinner(
             lambda: self._init_source_directory(proj_path, project_name),
             "Creating source directory",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         # tests
         self._logger.spinner(
             lambda: self._init_tests(proj_path, project_name),
             "Creating tests",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         # benchmarks
         self._logger.spinner(
             lambda: self._init_benchmarks(proj_path),
             "Creating benchmarks",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         # github actions
         self._logger.spinner(
             lambda: self._init_github_actions(proj_path, templates),
             "Setting up Github Actions",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         # misc setup
         self._logger.spinner(
             lambda: self._init_config_files(proj_path, templates),
             "Setting up configuration files",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         self._logger.info("Building project skeleton completed with no errors.")
@@ -362,6 +348,7 @@ class ProjectBuilder:
                 stdout=subprocess.DEVNULL,
             ),
             text="pip",
+            clear=False,
         )
 
         for dep in sorted(list(self._config.dependencies)):
@@ -370,6 +357,7 @@ class ProjectBuilder:
                     ["pip", "install", dep], stdout=subprocess.DEVNULL
                 ),
                 text=dep,
+                clear=False,
             )
 
         self._logger.info(Panel("Finalizing project..."), justify="left")
@@ -382,8 +370,6 @@ class ProjectBuilder:
         self._logger.spinner(
             _create_req_file,
             "Creating requirements_dev.txt",
-            clear=True,
-            min_show_duration=0.2,
         )
 
         # Ensure pre-commit is up to date

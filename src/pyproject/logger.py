@@ -58,8 +58,8 @@ class Logger:
         delay: float = 0.1,
         prefix: str = "    ",
         suffix: str = " ",
-        clear: bool = False,
-        min_show_duration: Optional[float] = None,
+        clear: bool = True,
+        min_show_duration: Optional[float] = 0.2,
     ):
         if Level.INFO > self._level:
             return func()
