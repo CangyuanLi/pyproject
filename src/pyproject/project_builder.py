@@ -20,7 +20,7 @@ from rich.panel import Panel
 
 from .licenses import LICENSES, License
 from .logger import Logger
-from .utils import squash_iterable
+from .utils import squash_collection
 
 # Globals
 
@@ -370,7 +370,7 @@ class ProjectBuilder:
                 )
             except subprocess.CalledProcessError:
                 not_installed.append(dep)
-        self._logger.warning(f"Failed to install {squash_iterable(not_installed)}")
+        self._logger.warning(f"Failed to install {squash_collection(not_installed)}")
 
         self._logger.info(Panel("Finalizing project..."), justify="left")
 
