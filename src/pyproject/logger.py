@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import enum
+import sys
 from typing import Callable, Optional
 
 import rich.pretty
@@ -48,6 +49,7 @@ class Logger:
         self._err_console.print(
             f"[bold red]Error[/bold red]: [red]{error_message}[/red]", **kwargs
         )
+        sys.exit(1)
 
     def spinner(
         self,

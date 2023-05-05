@@ -10,7 +10,6 @@ import re
 import shutil
 import string
 import subprocess
-import sys
 import venv
 from pathlib import Path
 from types import SimpleNamespace
@@ -275,7 +274,6 @@ class ProjectBuilder:
             self._validate_project_name(project_name)
         except ValueError as e:
             self._logger.error(str(e))
-            sys.exit(1)
 
         proj_path = self.proj_path / project_name
 
@@ -283,7 +281,6 @@ class ProjectBuilder:
             proj_path.mkdir()
         except FileExistsError:
             self._logger.error(f"{proj_path} already exists")
-            sys.exit(1)
 
         self._logger.info(Panel("Creating project files..."), justify="left")
 
