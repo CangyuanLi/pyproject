@@ -45,7 +45,7 @@ The final project structure looks like
 
 ```sh
 ├── .git
-── .github
+├── .github
 │   └── workflows
 │       └── tests.yml
 ├── .gitignore
