@@ -418,7 +418,7 @@ class ProjectBuilder:
 
         # --set_dependencies overrides the saved dependencies. So simply use saved
         # if flag is not set, otherwise parse the list of provided dependencies.
-        if config["set_dependencies"] is None:
+        if len(config["set_dependencies"]) == 0:
             config["dependencies"] = saved_config.dependencies
         else:
             config["dependencies"] = config["set_dependencies"]
