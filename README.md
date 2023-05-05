@@ -44,10 +44,12 @@ environment, and install packages.
 The final project structure looks like
 
 ```sh
+├── .git
 ├── .github
 │   └── workflows
 │       └── tests.yml
 ├── .gitignore
+├── .pre-commit-config.yaml
 ├── LICENSE
 ├── README.md
 ├── benchmarks

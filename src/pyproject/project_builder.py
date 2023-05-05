@@ -235,6 +235,10 @@ class ProjectBuilder:
         (src_proj_path / "__init__.py").touch()
         (src_proj_path / "py.typed").touch()
 
+        version_file = src_proj_path / "__version__.py"
+        version_file.touch()
+        version_file.write_text('__version__ = "0.0.0"')
+
     @staticmethod
     def _init_tests(proj_path: Path, project_name: str):
         tests_path = proj_path / "tests"

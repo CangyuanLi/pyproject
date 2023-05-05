@@ -1,9 +1,9 @@
 [metadata]
 name = $PACKAGE
-version = 0.0.0
+version = attr: $PACKAGE.__version__
 author = $AUTHOR
 author_email = $EMAIL
-description = 
+description =
 long_description = file: README.md
 long_description_content_type = text/markdown
 url = $GITHUB_URL/$PACKAGE
