@@ -69,7 +69,7 @@ class Config:
             if c2[k] is None:
                 merged_config[k] = v
             else:
-                merged_config[k] = c1[k]
+                merged_config[k] = c2[k]
 
         return Config(**merged_config)
 
