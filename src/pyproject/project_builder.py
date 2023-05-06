@@ -466,13 +466,22 @@ class ProjectBuilder:
             lambda: shutil.rmtree(self.proj_path / "dist", ignore_errors=True),
             "Removing existing build",
             prefix="",
+            clear=False,
         )
 
         self._logger.spinner(
-            env.run_bin(["python", "-m", "build"]), "Building project", prefix=""
+            lambda: env.run_bin(["python", "-m", "build"], stdout=subprocess.DEVNULL),
+            "Building project",
+            prefix="",
+            clear=False,
         )
         self._logger.spinner(
-            env.run_bin(["twine", "check", "dist/*"]), "Checking build", prefix=""
+            lambda: env.run_bin(
+                ["twine", "check", "dist/*"], stdout=subprocess.DEVNULL
+            ),
+            "Checking build",
+            prefix="",
+            clear=False,
         )
 
         if username == "" and password == "":
@@ -484,11 +493,14 @@ class ProjectBuilder:
         else:
             twine_args = ["-u", username, "-p", password]
 
-        self._logger.run_bin(
-            env.run_bin(["twine", "upload", "dist/*"] + twine_args),
-            "Uploading to PyPI",
-            prefix="",
-        )
+        # Upload to pypi
+        self._logger.info("\n", end="")
+
+        # allow twine to use its own errors
+        try:
+            env.run_bin(["twine", "upload", "dist/*"] + twine_args)
+        except subprocess.CalledProcessError:
+            pass
 
     def dispatch(self, action: Action, **kwargs):
         if action == "init":
