@@ -462,22 +462,33 @@ class ProjectBuilder:
         env = Env()
 
         # python -m build generates a dist folder, remove this in preparation
-        shutil.rmtree(self.proj_path / "dist", ignore_errors=True)
+        self._logger.spinner(
+            lambda: shutil.rmtree(self.proj_path / "dist", ignore_errors=True),
+            "Removing existing build",
+            prefix="",
+        )
 
-        env.run_bin(["python", "-m", "build"])
-        env.run_bin(["twine", "check", "dist/*"])
+        self._logger.spinner(
+            env.run_bin(["python", "-m", "build"]), "Building project", prefix=""
+        )
+        self._logger.spinner(
+            env.run_bin(["twine", "check", "dist/*"]), "Checking build", prefix=""
+        )
 
         if username == "" and password == "":
             twine_args = []
         elif username == "" and password != "":
             twine_args = ["-p", password]
-            env.run_bin(["twine", "upload", "dist/*", "-p", password])
         elif username != "" and password == "":
             twine_args = ["-u", username]
         else:
             twine_args = ["-u", username, "-p", password]
 
-        env.run_bin(["twine", "upload", "dist/*"] + twine_args)
+        self._logger.run_bin(
+            env.run_bin(["twine", "upload", "dist/*"] + twine_args),
+            "Uploading to PyPI",
+            prefix="",
+        )
 
     def dispatch(self, action: Action, **kwargs):
         if action == "init":
