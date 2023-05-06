@@ -39,7 +39,7 @@ pyproject init {project_name}
 to create your project folder. It will automatically setup a package structure, virtual
 environment, and install packages.
 
-![](demo.gif)
+![](https://raw.githubusercontent.com/CangyuanLi/pyproject/master/assets/demo.gif)
 
 The final project structure looks like
 
