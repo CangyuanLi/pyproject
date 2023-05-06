@@ -51,6 +51,7 @@ def test_parse_config_file():
             "mypy",
             "pre-commit",
             "pytest",
+            "pytest-cov",
             "ruff",
             "tox",
             "twine",

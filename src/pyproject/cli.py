@@ -84,6 +84,17 @@ def get_parser():
     return parser
 
 
+def _validate_input(args, logger: Logger):
+    if args.action not in ACTIONS:
+        logger.error(f"Invalid choice `{args.action}`, choose from {ACTIONS}")
+
+    if args.action == "init" and args.project_name is None:
+        logger.error("Action `init` requires project name")
+
+    if args.license not in LICENSES and args.license is not None:
+        logger.error(f"Invalid choice `{args.license}`, choose from {ALLOWED_LICENSES}")
+
+
 def main():
     parser = get_parser()
     args = parser.parse_args()
@@ -96,14 +107,7 @@ def main():
         logging_level = Level.ERROR
     logger = Logger(logging_level)
 
-    if args.action not in ACTIONS:
-        logger.error(f"Invalid choice `{args.action}`, choose from {ACTIONS}")
-
-    if args.action == "init" and args.project_name is None:
-        logger.error("Action `init` requires project name")
-
-    if args.license not in LICENSES and args.license is not None:
-        logger.error(f"Invalid choice `{args.license}`, choose from {ALLOWED_LICENSES}")
+    _validate_input(args, logger)
 
     config = {
         "pypi_username": args.pypi_username,
