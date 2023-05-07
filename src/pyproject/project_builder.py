@@ -269,7 +269,7 @@ class ProjectBuilder:
     def _init_github_actions(proj_path, templates: dict):
         workflows_path = proj_path / ".github/workflows"
         workflows_path.mkdir(parents=True)
-        (workflows_path / "tests.yaml").write_text(templates["tests"])
+        (workflows_path / "tests.yml").write_text(templates["tests"])
 
     def init_project(self, project_name: str):
         """Called when user specifies `action = init`.
