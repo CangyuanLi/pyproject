@@ -370,7 +370,11 @@ class ProjectBuilder:
                 )
             except subprocess.CalledProcessError:
                 not_installed.append(dep)
-        self._logger.warning(f"Failed to install {squash_collection(not_installed)}")
+
+        if len(not_installed) > 0:
+            self._logger.warning(
+                f"Failed to install {squash_collection(not_installed)}"
+            )
 
         self._logger.info(Panel("Finalizing project..."), justify="left")
 
@@ -384,14 +388,29 @@ class ProjectBuilder:
             "Creating requirements_dev.txt",
         )
 
-        # Ensure pre-commit is up to date
-        self._logger.spinner(
-            lambda: venv_builder.run_bin(
-                ["pre-commit", "autoupdate"], cwd=proj_path, stdout=subprocess.DEVNULL
-            ),
-            "Ensuring pre-commit config is up to date",
-            clear=True,
-        )
+        if (
+            "pre-commit" in self._config.dependencies
+            and "pre-commit" not in not_installed
+        ):
+            # Ensure pre-commit is up to date
+            self._logger.spinner(
+                lambda: venv_builder.run_bin(
+                    ["pre-commit", "autoupdate"],
+                    cwd=proj_path,
+                    stdout=subprocess.DEVNULL,
+                ),
+                "Ensuring pre-commit config is up to date",
+                clear=True,
+            )
+
+            # Install pre-commit hooks
+            self._logger.spinner(
+                lambda: venv_builder.run_bin(
+                    ["pre-commit", "install"], cwd=proj_path, stdout=subprocess.DEVNULL
+                ),
+                "Installing pre-commit hooks",
+                clear=True,
+            )
 
         self._logger.info(f"Done setting up {project_name}!", style="green")
 
