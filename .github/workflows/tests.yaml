@@ -17,6 +17,7 @@ jobs:
     - name: Update coverage badge
       run: |
         touch assets/test.txt
+        echo "blah"
     - name: Commit changes
       run: |
           git config user.name "GitHub Actions Bot"
