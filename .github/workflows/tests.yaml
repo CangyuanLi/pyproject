@@ -22,4 +22,4 @@ jobs:
 
           git add assets/test.txt
           git commit -m "create file"
-          git push origin master
+          git push origin gh-actions
