@@ -1,4 +1,4 @@
-name: Tests
+name: Status update
 
 on:
   push:
@@ -7,21 +7,25 @@ on:
       - tests/**
       - .github/**
 
-jobs:
-  update:
+  coverage:
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
     - name: Update coverage badge
       run: |
-        touch assets/test.txt
+        python -m pip install --upgrade pip
+        pip install coverage-badge
     - name: Commit changes
       run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
 
-          git add assets/test.txt
-          git commit -m "create file"
-          git push
+        git add assets/coverage.svg
+        git commit -m "update coverage badge"
+        git push
