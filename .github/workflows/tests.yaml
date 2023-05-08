@@ -30,6 +30,7 @@ jobs:
       run: tox
 
   update:
+    steps:
     - name: Update coverage badge
       run: |
         touch assets/test.txt
