@@ -6,7 +6,6 @@ import dataclasses
 import datetime
 import json
 import os
-import re
 import shutil
 import string
 import subprocess
@@ -157,16 +156,6 @@ class ProjectBuilder:
         self._create_config_dir()
         self._config = self._set_config(config)
 
-    @staticmethod
-    def _validate_project_name(project_name: str) -> None:
-        # https://packaging.python.org/en/latest/specifications/name-normalization/
-        regex = "^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
-        if not bool(re.match(regex, project_name, re.IGNORECASE)):
-            raise ValueError(
-                "A valid project name may only contain ASCII letters, numbers, ., -,"
-                " and/or _, and they must begin and end with a letter or number."
-            )
-
     def _create_config_dir(self) -> None:
         """Create the user config directory if it does not exist. Since the default
         configuration may add keys, merge the two, preferring the
@@ -279,11 +268,6 @@ class ProjectBuilder:
         """
 
         # Create the project directory
-        try:
-            self._validate_project_name(project_name)
-        except ValueError as e:
-            self._logger.error(str(e))
-
         proj_path = self.proj_path / project_name
 
         try:

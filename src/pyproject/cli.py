@@ -1,4 +1,5 @@
 import argparse
+import re
 import typing
 from typing import Optional
 
@@ -9,6 +10,16 @@ from .project_builder import Action, ProjectBuilder
 
 ACTIONS = typing.get_args(Action)
 ALLOWED_LICENSES = tuple(LICENSES.keys())
+
+
+def _validate_project_name(project_name: str) -> None:
+    # https://packaging.python.org/en/latest/specifications/name-normalization/
+    regex = "^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
+    if not bool(re.match(regex, project_name, re.IGNORECASE)):
+        raise ValueError(
+            "A valid project name may only contain ASCII letters, numbers, ., -,"
+            " and/or _, and they must begin and end with a letter or number."
+        )
 
 
 def _parse_arg_to_set(string: Optional[str], sep: str = ",") -> set[str]:
@@ -88,8 +99,14 @@ def _validate_input(args, logger: Logger):
     if args.action not in ACTIONS:
         logger.error(f"Invalid choice `{args.action}`, choose from {ACTIONS}")
 
-    if args.action == "init" and args.project_name is None:
-        logger.error("Action `init` requires project name")
+    if args.action == "init":
+        if args.project_name is None:
+            logger.error("Action `init` requires project name")
+        else:
+            try:
+                _validate_project_name(args.project_name)
+            except ValueError as e:
+                logger.error(str(e))
 
     if args.license not in LICENSES and args.license is not None:
         logger.error(f"Invalid choice `{args.license}`, choose from {ALLOWED_LICENSES}")
