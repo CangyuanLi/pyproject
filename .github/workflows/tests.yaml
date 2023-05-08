@@ -9,6 +9,8 @@ on:
 
 jobs:
   update:
+    permissions:
+      actions: write
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
