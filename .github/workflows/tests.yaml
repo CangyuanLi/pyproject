@@ -18,11 +18,16 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.11
-    - name: Update coverage badge
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install coverage-badge
+        pip install pytest
+        pip install pytest-cov
 
+    - name: Update coverage badge
+      run: |
+        pytest tests/
         coverage-badge -o assets/coverage.svg -f
     - name: Commit changes
       run: |
