@@ -27,7 +27,7 @@ jobs:
 
     - name: Update coverage badge
       run: |
-        python -m pytest tests/
+        pytest tests/
         coverage-badge -o assets/coverage.svg -f
     - name: Commit changes
       run: |
