@@ -13,6 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Update coverage badge
-      working-directory: .
       run: |
         touch assets/test.txt
+    - name: Commit changes
+      run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+
+          git add assets/test.txt
+          git commit -m "create file"
+          git push origin master
