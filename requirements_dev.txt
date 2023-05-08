@@ -39,7 +39,6 @@ platformdirs==3.5.0
 pluggy==1.0.0
 pre-commit==3.3.1
 Pygments==2.15.1
--e git+https://github.com/CangyuanLi/pyproject.git@1f0c7674c99962ddef30435c8bcf3df2a50f48e6#egg=pyproject_generator
 pyproject_hooks==1.0.0
 pytest==7.3.1
 pytest-cov==4.0.0
@@ -52,13 +51,6 @@ rich==13.3.5
 ruff==0.0.264
 six==1.16.0
 snowballstemmer==2.2.0
-Sphinx==6.2.1
-sphinxcontrib-applehelp==1.0.4
-sphinxcontrib-devhelp==1.0.2
-sphinxcontrib-htmlhelp==2.0.1
-sphinxcontrib-jsmath==1.0.1
-sphinxcontrib-qthelp==1.0.3
-sphinxcontrib-serializinghtml==1.1.5
 spinners==0.0.24
 termcolor==2.3.0
 twine==4.0.2

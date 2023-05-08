@@ -33,5 +33,5 @@ jobs:
         git config user.email "<>"
 
         git add assets/coverage.svg
-        git commit -m "update coverage badge"
+        git commit -m "update coverage badge lol"
         git push
