@@ -31,6 +31,7 @@ jobs:
 
   update:
     steps:
+    - uses: actions/checkout@v2
     - name: Update coverage badge
       run: |
         touch assets/test.txt
