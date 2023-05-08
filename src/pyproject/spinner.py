@@ -7,7 +7,7 @@ from typing import Optional
 from rich.console import Console
 
 BACKSPACE = "\b"
-CLEAR_LINE = "\033[K"
+CLEAR_LINE = "\033[K"  # https://tldp.org/HOWTO/Bash-Prompt-HOWTO/x361.html
 CHECKMARK = "[green]\u2713[/green]"
 XMARK = "[red]\u2717[/red]"
 
