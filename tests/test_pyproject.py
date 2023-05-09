@@ -23,7 +23,7 @@ CONFIG2: dict = {
     "github_url": "url",
     "author": "author",
     "email": "email",
-    "license": "apache",
+    "license": "apache_v2",
     "set_dependencies": {"black", "ruff", "pytest"},
     "add_dependencies": {"white"},
     "remove_dependencies": {"black"},
@@ -67,6 +67,6 @@ def test_config_resolution():
         github_url="url",
         author="author",
         email="email",
-        license="apache",
+        license="apache_v2",
         dependencies={"white", "ruff", "pytest"},
     )
