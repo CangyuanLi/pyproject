@@ -149,6 +149,8 @@ cython_debug/
 **.xlsx
 **.xls
 
+**tmpdir/
+
 **/*-checkpoint*
 
 **temp.py
