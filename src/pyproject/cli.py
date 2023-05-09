@@ -58,7 +58,11 @@ def get_parser():
     parser.add_argument("--github_url", type=str, help="Set Github URL")
     parser.add_argument("--author", type=str, help="Set author name")
     parser.add_argument("--email", type=str, help="Set author email")
-    parser.add_argument("--license", type=str, help="Set license")
+    parser.add_argument(
+        "--license",
+        type=str,
+        help=f"Set license. Available licenses are {ALLOWED_LICENSES}",
+    )
     parser.add_argument(
         "--set_dependencies",
         type=str,
