@@ -9,10 +9,12 @@ class License:
     link: str
 
 
+# https://gist.github.com/lukas-h/2a5d00690736b4c3a7ba
+
 LICENSES = {
-    "apache": License(
-        short_name="apache",
-        proper_name="Apache",
+    "apache_v2": License(
+        short_name="apache_v2",
+        proper_name="Apache 2.0",
         badge_url="https://img.shields.io/badge/License-Apache_2.0-blue.svg",
         link="https://opensource.org/licenses/Apache-2.0",
     ),
@@ -37,7 +39,7 @@ LICENSES = {
     "gpl_v3": License(
         short_name="gpl_v3",
         proper_name="GPL v3",
-        badge_url="https://img.shields.io/badge/License-GPLv3-blue.svg",
+        badge_url="https://img.shields.io/badge/License-GPL_v3-blue.svg",
         link="https://www.gnu.org/licenses/gpl-3.0",
     ),
     "mit": License(
