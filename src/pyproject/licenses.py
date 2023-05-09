@@ -16,6 +16,12 @@ LICENSES = {
         badge_url="https://img.shields.io/badge/License-Apache_2.0-blue.svg",
         link="https://opensource.org/licenses/Apache-2.0",
     ),
+    "bsd2": License(
+        short_name="bsd2",
+        proper_name="BSD 2-Clause",
+        badge_url="https://img.shields.io/badge/License-BSD_2--Clause-orange.svg",
+        link="https://opensource.org/licenses/BSD-2-Clause",
+    ),
     "bsd3": License(
         short_name="bsd3",
         proper_name="BSD 3-Clause",
