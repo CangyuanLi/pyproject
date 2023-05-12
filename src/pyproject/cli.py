@@ -48,6 +48,9 @@ def get_parser():
     )
 
     parser.add_argument(
+        "-i", "--interactive", action="store_true", help="Run in interactive mode"
+    )
+    parser.add_argument(
         "--reset_config",
         required=False,
         action="store_true",
@@ -120,7 +123,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    options = {"quiet": args.quiet}
+    options = {"quiet": args.quiet, "interactive": args.interactive}
 
     # set up the console for logging
     logging_level = Level.INFO

@@ -154,6 +154,10 @@ class ProjectBuilder:
 
         self._user_config_dir = Path(user_config_dir)
         self._create_config_dir()
+
+        if options["interactive"]:
+            pass
+
         self._config = self._set_config(config)
 
     def _create_config_dir(self) -> None:
@@ -255,10 +259,13 @@ class ProjectBuilder:
         (proj_path / "LICENSE").write_text(templates[f"license_{license}"])
 
     @staticmethod
-    def _init_github_actions(proj_path, templates: dict):
+    def _init_github_actions(proj_path: Path, templates: dict):
         workflows_path = proj_path / ".github/workflows"
         workflows_path.mkdir(parents=True)
-        (workflows_path / "tests.yaml").write_text(templates["tests"])
+        (workflows_path / "tests.yaml").write_text(templates["gh_actions_tests"])
+        (workflows_path / "status_update.yaml").write_text(
+            templates["gh_actions_status_update"]
+        )
 
     def init_project(self, project_name: str):
         """Called when user specifies `action = init`.
