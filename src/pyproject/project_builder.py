@@ -162,7 +162,7 @@ class ProjectBuilder:
         configuration may add keys, merge the two, preferring the
         existing config so we don't overwrite user changes.
         """
-        self._user_config_dir.mkdir(exist_ok=True)
+        self._user_config_dir.mkdir(parents=True, exist_ok=True)
         config_file = self._user_config_dir / "config.json"
 
         if not config_file.exists() or config_file.stat().st_size == 0:
