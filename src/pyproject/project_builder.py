@@ -204,7 +204,7 @@ class ProjectBuilder:
 
         filled_in_templates = {}
         for file in self._template_path.glob("*.template"):
-            with open(file, "r") as f:
+            with open(file, "r", encoding="utf8") as f:
                 src = string.Template(f.read())
                 result = src.substitute(d)
 
