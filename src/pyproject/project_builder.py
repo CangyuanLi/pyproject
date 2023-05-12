@@ -155,9 +155,6 @@ class ProjectBuilder:
         self._user_config_dir = Path(user_config_dir)
         self._create_config_dir()
 
-        if options["interactive"]:
-            pass
-
         self._config = self._set_config(config)
 
     def _create_config_dir(self) -> None:
