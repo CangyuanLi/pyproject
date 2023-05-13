@@ -47,6 +47,7 @@ def test_parse_config_file():
         dependencies=[
             "black",
             "build",
+            "coverage-badge",
             "isort",
             "mypy",
             "pre-commit",
