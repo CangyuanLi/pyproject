@@ -218,12 +218,21 @@ class ProjectBuilder:
 
     @staticmethod
     def _init_source_directory(proj_path: Path, project_name: str):
+        # create src/ directory
         src_path = proj_path / "src"
         src_path.mkdir()
 
+        # create src/project_name
         src_proj_path = src_path / project_name
         src_proj_path.mkdir()
-        (src_proj_path / "__init__.py").touch()
+
+        # create __init__.py
+        init_file = src_proj_path / "__init__.py"
+        init_file.touch()
+        init_file.write_text(
+            "# ruff: noqa: E402,F401\n\nfrom .__version__ import __version__"
+        )
+
         (src_proj_path / "py.typed").touch()
 
         version_file = src_proj_path / "__version__.py"
