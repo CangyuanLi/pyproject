@@ -470,6 +470,12 @@ class ProjectBuilder:
         """
         self._write_config_file(self._config)
 
+    def _has_pypirc(self) -> bool:
+        # check project root and home directory
+        return (self.proj_path / ".pypirc").exists() or (
+            Path().home() / ".pypirc"
+        ).exists()
+
     def upload(self):
         """Discover the virtual environment and upload project to PyPI."""
         username = self._config.pypi_username
@@ -500,7 +506,7 @@ class ProjectBuilder:
             clear=False,
         )
 
-        if username == "" and password == "":
+        if (username == "" and password == "") or self._has_pypirc():
             twine_args = []
         elif username == "" and password != "":
             twine_args = ["-p", password]
