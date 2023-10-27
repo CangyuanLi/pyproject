@@ -1,9 +1,28 @@
+[project]
+license = { file = "LICENSE" }
+name = "$PACKAGE"
+version = "0.0.1"
+description = "your_description_here"
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [{ name = "$AUTHOR", email = "$EMAIL" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: $LICENSE License",
+]
+dependencies = []
+
+[project.urls]
+"Homepage" = "$GITHUB_URL/$PACKAGE"
+"Source" = "$GITHUB_URL/$PACKAGE"
+"Bug Reports" = "$GITHUB_URL/$PACKAGE/issues"
+
 [build-system]
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-addopts = "--cov=$PACKAGE"
+addopts = "--cov=test_proj"
 testpaths = ["tests"]
 
 [tool.mypy]

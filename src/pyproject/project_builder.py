@@ -254,7 +254,6 @@ class ProjectBuilder:
     def _init_config_files(self, proj_path: Path, templates: dict):
         (proj_path / "tox.ini").write_text(templates["tox"])
         (proj_path / "pyproject.toml").write_text(templates["pyproject"])
-        (proj_path / "setup.cfg").write_text(templates["setup"])
         (proj_path / ".gitignore").write_text(templates["gitignore"])
         (proj_path / "README.md").write_text(templates["readme"])
         (proj_path / ".pre-commit-config.yaml").write_text(
